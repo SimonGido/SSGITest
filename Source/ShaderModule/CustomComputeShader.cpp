@@ -104,8 +104,7 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 	if (!(bCachedParamsAreValid && m_pCachedParams.RenderTarget))
 	{
 		return;
-	}
-
+	
 	//Render Thread Assertion
 	check(IsInRenderingThread());
 
