@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="..\..\PostProcessing.uproject" />
+    <Filter Include="Source">
+      <UniqueIdentifier>{1281CC2A-15D0-493B-8F6B-D2B524845013}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\PostProcessing.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\Source\PostProcessingEditor.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <Filter Include="Config">
+      <UniqueIdentifier>{74E77AAA-E179-4C57-BD3C-C4D642C515D0}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Config\DefaultEditor.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEngine.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultGame.ini">
+      <Filter>Config</Filter>
+    </None>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{CD7BEDB7-2B4F-419B-9D0C-899B0B24DAC7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Private">
+      <UniqueIdentifier>{07314F48-282F-4E7B-B073-4BBF294A1FC7}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Shaders\Private\CustomShader.usf">
+      <Filter>Shaders\Private</Filter>
+    </None>
+    <Filter Include="Source\PostProcessing">
+      <UniqueIdentifier>{F3077F47-D339-4BC8-BA0A-BBCBE85E9268}</UniqueIdentifier>
+    </Filter>
+    <ClCompile Include="..\..\Source\PostProcessing\ComputeActor.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\PostProcessing\ComputeActor.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <None Include="..\..\Source\PostProcessing\PostProcessing.Build.cs">
+      <Filter>Source\PostProcessing</Filter>
+    </None>
+    <ClCompile Include="..\..\Source\PostProcessing\PostProcessing.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\PostProcessing\PostProcessing.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\PostProcessing\PostProcessingGameModeBase.cpp">
+      <Filter>Source\PostProcessing</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\PostProcessing\PostProcessingGameModeBase.h">
+      <Filter>Source\PostProcessing</Filter>
+    </ClInclude>
+    <Filter Include="Source\ShaderModule">
+      <UniqueIdentifier>{05DA5AB5-23B8-466E-9C4F-99EA44BCD8AE}</UniqueIdentifier>
+    </Filter>
+    <ClCompile Include="..\..\Source\ShaderModule\CustomComputeShader.cpp">
+      <Filter>Source\ShaderModule</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\ShaderModule\CustomComputeShader.h">
+      <Filter>Source\ShaderModule</Filter>
+    </ClInclude>
+    <None Include="..\..\Source\ShaderModule\ShaderModule.Build.cs">
+      <Filter>Source\ShaderModule</Filter>
+    </None>
+    <ClCompile Include="..\..\Source\ShaderModule\ShaderModule.cpp">
+      <Filter>Source\ShaderModule</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\ShaderModule\ShaderModule.h">
+      <Filter>Source\ShaderModule</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

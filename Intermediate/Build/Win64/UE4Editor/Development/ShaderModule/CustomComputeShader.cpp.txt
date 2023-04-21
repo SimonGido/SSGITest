@@ -1,0 +1,28 @@
+C:\Users\Gido\Work\PostProcessing\Intermediate\Build\Win64\UE4Editor\Development\ShaderModule\Definitions.ShaderModule.h
+C:\Users\Gido\Work\PostProcessing\Source\ShaderModule\CustomComputeShader.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime/Engine/Classes/Engine/TextureRenderTarget2D.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Engine\Classes\Engine/TextureRenderTarget.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\TextureRenderTarget.generated.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\TextureRenderTarget2D.generated.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\ShaderParameterStruct.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphResources.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphParameter.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphTextureSubresource.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphResources.inl
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphUtils.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphBuilder.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphEvent.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphEvent.inl
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphPass.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphParameters.inl
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphValidation.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphBlackboard.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Core\Public\Misc/GeneratedTypeName.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraphBuilder.inl
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderTargetPool.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Renderer\Private\PostProcess/SceneRenderTargets.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Renderer\Private\PostProcess\../TranslucencyPass.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Renderer\Private\PostProcess\../VT/VirtualTextureFeedback.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Renderer\Public\VT/VirtualTextureFeedbackBuffer.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Renderer\Public\SceneRenderTargetParameters.h
+C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\RenderCore\Public\RenderGraph.h
