@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Camera/CameraComponent.h"
 #include "ComputeActor.generated.h"
 
 UCLASS()
@@ -24,7 +25,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-
+	TSharedPtr<class FMyViewExtension, ESPMode::ThreadSafe> MyViewExtension;
 
 public:
 	UPROPERTY()
@@ -38,6 +39,24 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
 		class UMaterial* m_Material;
-private:
-	uint32 m_pTimeStamp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
+	int m_SamplesCount = 10;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
+	float   m_IndirectAmount = 1.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
+	float   m_NoiseAmount = 2.0f;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
+	bool    m_Noise = true; // No noise
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
+	bool m_Enabled = true;
+
+	UCameraComponent* m_CameraComponent;
+
+	struct FComputeShaderParameters* m_Parameters;
 };

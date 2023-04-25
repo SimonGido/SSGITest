@@ -1,17 +1,113 @@
 #include "/Engine/Public/Platform.ush"
 
-RWTexture2D<float> OutputTexture;
-Texture2D<float> ColorSurface;
-float2 Dimensions;
-uint TimeStamp;
+RWTexture2D<float4> OutputTexture;
+RWTexture2D<float> ColorTexture;
+Texture2D MainTexture;
+Texture2D<float> DepthTexture;
+
+float4 MainTexTexelSize;
+int SamplesCount;
+float IndirectAmount;
+float NoiseAmount;
+int Noise;
+float4x4 InverseProjectionMatrix;
 
 
-float hash12(float2 p)
+
+float2 mod_dither3(float2 u)
 {
-    float3 p3 = frac(float3(p.xyx) * .1031);
-    p3 += dot(p3, p3.yzx + 33.33);
-    return frac((p3.x + p3.y) * p3.z);
+    float noiseX = fmod(u.x + u.y + fmod(208. + u.x * 3.58, 13. + fmod(u.y * 22.9, 9.)), 7.) * .143;
+    float noiseY = fmod(u.y + u.x + fmod(203. + u.y * 3.18, 12. + fmod(u.x * 27.4, 8.)), 6.) * .139;
+    return float2(noiseX, noiseY) * 2.0 - 1.0;
 }
+
+float2 dither(float2 coord, float seed, float2 size)
+{
+    float noiseX = ((frac(1.0 - (coord.x + seed * 1.0) * (size.x / 2.0)) * 0.25) + (frac((coord.y + seed * 2.0) * (size.y / 2.0)) * 0.75)) * 2.0 - 1.0;
+    float noiseY = ((frac(1.0 - (coord.x + seed * 3.0) * (size.x / 2.0)) * 0.75) + (frac((coord.y + seed * 4.0) * (size.y / 2.0)) * 0.25)) * 2.0 - 1.0;
+    return float2(noiseX, noiseY);
+}
+
+
+float3 getViewPos(Texture2D<float> tex, float2 coord, float4x4 ipm)
+{
+    float depth = tex[coord].r;
+    
+    //Turn the current pixel from ndc to world coordinates
+    float3 pixel_pos_ndc = float3(coord * 2.0 - 1.0, depth * 2.0 - 1.0);
+    float4 pixel_pos_clip = mul(ipm, float4(pixel_pos_ndc, 1.0));
+    float3 pixel_pos_cam = pixel_pos_clip.xyz / pixel_pos_clip.w;
+    return pixel_pos_cam;
+}
+
+float3 getViewNormal(Texture2D<float> tex, float2 coord, float4x4 ipm)
+{
+    float pW = MainTexTexelSize.x;
+    float pH = MainTexTexelSize.y;
+
+    float3 p1 = getViewPos(tex, coord + float2(pW, 0.0), ipm).xyz;
+    float3 p2 = getViewPos(tex, coord + float2(0.0, pH), ipm).xyz;
+    float3 p3 = getViewPos(tex, coord + float2(-pW, 0.0), ipm).xyz;
+    float3 p4 = getViewPos(tex, coord + float2(0.0, -pH), ipm).xyz;
+
+    float3 vP = getViewPos(tex, coord, ipm);
+
+    float3 dx = vP - p1;
+    float3 dy = p2 - vP;
+    float3 dx2 = p3 - vP;
+    float3 dy2 = vP - p4;
+
+    if (length(dx2) < length(dx) && coord.x - pW >= 0.0 || coord.x + pW > 1.0)
+    {
+        dx = dx2;
+    }
+
+    if (length(dy2) < length(dy) && coord.y - pH >= 0.0 || coord.y + pH > 1.0)
+    {
+        dy = dy2;
+    }
+
+    return normalize(-cross(dx, dy).xyz);
+}
+
+float lenSq(float3 v)
+{
+    return pow(v.x, 2.0) + pow(v.y, 2.0) + pow(v.z, 2.0);
+}
+
+float3 lightSample(Texture2D color_tex, Texture2D<float> depth_tex, float2 coord, float4x4 ipm, float2 lightcoord, float3 normal, float3 position, float n, float2 texsize)
+{
+    float2 random = float2(1.0, 1.0);
+    if (Noise > 0)
+    {
+        random = (mod_dither3((coord * texsize) + float2(n * 82.294, n * 127.721))) * 0.01 * NoiseAmount;
+    }
+    else
+    {
+        random = dither(coord, 1.0, texsize) * 0.1 * NoiseAmount;
+    }
+
+    lightcoord *= float2(0.7, 0.7);
+
+    //light absolute data 
+    float4 lightcolor = color_tex[((lightcoord) + random)];
+    lightcolor = color_tex[coord];
+    float3 lightnormal = getViewNormal(depth_tex, frac(lightcoord) + random, ipm).rgb;
+    float3 lightposition = getViewPos(depth_tex, frac(lightcoord) + random, ipm).xyz;
+
+                //light variable data
+    float3 lightpath = lightposition - position;
+    float3 lightdir = normalize(lightpath);
+
+                //falloff calculations
+    float cosemit = clamp(dot(lightdir, -lightnormal), 0.0, 1.0); //emit only in one direction
+    float coscatch = clamp(dot(lightdir, normal) * 0.5 + 0.5, 0.0, 1.0); //recieve light from one direction
+    float distfall = pow(lenSq(lightpath), 0.1) + 1.0; //fall off with distance
+
+    return (lightcolor * cosemit * coscatch / distfall) * (length(lightposition) / 20.0);
+}
+
+
 
 
 [numthreads(THREADGROUPSIZE_X, THREADGROUPSIZE_Y, THREADGROUPSIZE_Z)]
@@ -19,9 +115,41 @@ void Main(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> cu
                        uint3 DTid : SV_DispatchThreadID, //atm: 0...256 in rows & columns (XY)   --> "global" thread id
                        uint3 GTid : SV_GroupThreadID, //atm: 0...256, -,- in columns (X)      --> current threadId in group / "local" threadId
                        uint GI : SV_GroupIndex)            //atm: 0...256 in columns (X)           --> "flattened" index of a thread within a group)
-{   
-    float2 p = float2(DTid.xy * TimeStamp);
-    float output = hash12(p);
+{
+ 
+    float4 direct = MainTexture[int2(DTid.xy)];
+    float2 uv = DTid.xy / MainTexTexelSize.xy;
+    float3 color = normalize(direct).rgb;
+    float3 indirect = float3(0.0, 0.0, 0.0);
+    float PI = 3.14159;
+    float2 texSize = MainTexTexelSize.xy;
     
-    OutputTexture[DTid.xy] = ColorSurface[DTid.xy];
+    float3 position = getViewPos(DepthTexture, uv, InverseProjectionMatrix);
+    float3 normal = getViewNormal(DepthTexture, uv, InverseProjectionMatrix);
+   
+    float dlong = PI * (3.0 - sqrt(5.0));
+    float dz = 1.0 / float(SamplesCount);
+    float l = 0.0;
+    float z = 1.0 - dz / 2.0;
+
+    for (int i = 0; i < SamplesCount; i++)
+    {
+        float r = sqrt(1.0 - z);
+    
+        float xpoint = (cos(l) * r) * 0.5 + 0.5;
+        float ypoint = (sin(l) * r) * 0.5 + 0.5;
+    
+        xpoint *= texSize.x;
+        ypoint *= texSize.y;
+        
+        z = z - dz;
+        l = l + dlong;
+    
+        indirect += lightSample(MainTexture, DepthTexture, DTid.xy, InverseProjectionMatrix, DTid.xy, normal, position, float(i), texSize);
+    }
+    float3 indirectColor = (indirect / float(SamplesCount)) * IndirectAmount;
+        
+    direct.rgb += indirectColor.rgb;
+    OutputTexture[DTid.xy] = float4(direct.rgb, 1.0);
+
 }

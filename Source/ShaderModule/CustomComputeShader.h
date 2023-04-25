@@ -5,18 +5,45 @@
 #include "CoreMinimal.h"
 
 
+#include "SceneViewExtension.h"
+#include "PostProcess/PostProcessing.h"
 
 #include "Runtime/Engine/Classes/Engine/TextureRenderTarget2D.h"
 
 #define NUM_THREADS_PER_GROUP_DIMENSION 32
 
 
+class SHADERMODULE_API FMyViewExtension : public FSceneViewExtensionBase {
+	FLinearColor HighlightColor;
+public:
+	FMyViewExtension(const FAutoRegister& AutoRegister, FLinearColor CustomColor);
+
+	//~ Begin FSceneViewExtensionBase Interface
+	virtual void SetupViewFamily(FSceneViewFamily& InViewFamily) override {};
+	virtual void SetupView(FSceneViewFamily& InViewFamily, FSceneView& InView) override {};
+	virtual void BeginRenderViewFamily(FSceneViewFamily& InViewFamily) override {};
+	virtual void PreRenderViewFamily_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneViewFamily& InViewFamily) override {};
+	virtual void PreRenderView_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneView& InView) override {};
+	virtual void PostRenderBasePass_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneView& InView) override {};
+	virtual void PrePostProcessPass_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& View, const FPostProcessingInputs& Inputs) override;
+	//~ End FSceneViewExtensionBase Interface
+
+};
 
 
 struct FComputeShaderParameters
 {
 	UTextureRenderTarget2D* RenderTarget;
 
+	int32_t SamplesCount = 10;
+	float   IndirectAmount = 0;
+	float   NoiseAmount = 2.0f;
+	bool    Noise = true; // No noise
+	float	Strength = 1.0f;
+
+	FMatrix InverseProjection;
+
+	bool Enabled = true;
 
 	FIntPoint GetRenderTargetSize() const
 	{
@@ -32,8 +59,6 @@ struct FComputeShaderParameters
 
 private:
 	FIntPoint CachedRenderTargetSize;
-public:
-	uint32 TimeStamp;
 };
 
 
@@ -58,6 +83,9 @@ public:
 	void UpdateParameters(FComputeShaderParameters& DrawParameters);
 
 	void Execute_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext);
+
+	void Execute_RenderThread(FRHICommandListImmediate& RHICmdList, FRDGTexture* ColorTexture, FRDGTexture* de);
+
 
 private:
 	//Private constructor to prevent client from instanciating
