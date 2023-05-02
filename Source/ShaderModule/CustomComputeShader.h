@@ -24,7 +24,7 @@ public:
 	virtual void BeginRenderViewFamily(FSceneViewFamily& InViewFamily) override {};
 	virtual void PreRenderViewFamily_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneViewFamily& InViewFamily) override {};
 	virtual void PreRenderView_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneView& InView) override {};
-	virtual void PostRenderBasePass_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneView& InView) override {};
+	virtual void PostRenderBasePass_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneView& InView) override;
 	virtual void PrePostProcessPass_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& View, const FPostProcessingInputs& Inputs) override;
 	//~ End FSceneViewExtensionBase Interface
 
@@ -34,7 +34,6 @@ public:
 struct FComputeShaderParameters
 {
 	UTextureRenderTarget2D* RenderTarget;
-
 	int32_t SamplesCount = 10;
 	float   IndirectAmount = 0;
 	float   NoiseAmount = 2.0f;
@@ -84,10 +83,9 @@ public:
 
 	void Execute_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext);
 
-	void Execute_RenderThread(FRHICommandListImmediate& RHICmdList, FRDGTexture* ColorTexture, FRDGTexture* de);
+	void Execute_RenderThread(FPostOpaqueRenderParameters& params);
 
-
-private:
+public:
 	//Private constructor to prevent client from instanciating
 	ComputeShaderManager() = default;
 
@@ -105,4 +103,7 @@ private:
 
 	//Reference to a pooled render target where the shader will write its output
 	TRefCountPtr<IPooledRenderTarget> m_pComputeShaderOutput;
+
+	int32_t m_pOutputSizeX = 0;
+	int32_t m_pOutputSizeY = 0;
 };

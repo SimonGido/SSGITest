@@ -27,15 +27,11 @@ public:
 	/// </summary>
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_UAV(RWTexture2D<float>, OutputTexture)
-		SHADER_PARAMETER_UAV(RWTexture2D<float>, ColorTexture)
-		SHADER_PARAMETER_TEXTURE(Texture2D<float>, MainTexture)
+		SHADER_PARAMETER_TEXTURE(Texture2D, MainTexture)
 		SHADER_PARAMETER_TEXTURE(Texture2D<float>, DepthTexture)
-		SHADER_PARAMETER(FVector4, MainTexTexelSize)
-		SHADER_PARAMETER(int, SamplesCount)
-		SHADER_PARAMETER(float, IndirectAmount)
-		SHADER_PARAMETER(float, NoiseAmount)
-		SHADER_PARAMETER(int, Noise)
 		SHADER_PARAMETER(FMatrix, InverseProjectionMatrix)
+		SHADER_PARAMETER(FVector4, ViewportSize)
+		SHADER_PARAMETER(FVector4, Data)
 	END_SHADER_PARAMETER_STRUCT()
 
 
@@ -77,6 +73,11 @@ void ComputeShaderManager::BeginRendering()
 
 	if (RendererModule)
 	{
+		FPostOpaqueRenderDelegate deleg;
+		deleg.BindRaw(this, &ComputeShaderManager::Execute_RenderThread);
+
+
+		RendererModule->RegisterPostOpaqueRenderDelegate(deleg);
 		m_pOnPostResolvedSceneColorHandle = RendererModule->GetResolvedSceneColorCallbacks().AddRaw(this, &ComputeShaderManager::Execute_RenderThread);
 	}
 }
@@ -131,13 +132,15 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 	int32_t sizeY = (int32_t)colorTexture->GetTexture2D()->GetSizeY();
 	
 	//If the render target is not valid, get an element from the render target pool by supplying a Descriptor
-	if (!m_pComputeShaderOutput.IsValid())
+	if (!m_pComputeShaderOutput.IsValid() || m_pOutputSizeX != sizeX || m_pOutputSizeY != sizeY)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Not Valid"));
 		
 		FPooledRenderTargetDesc ComputeShaderOutputDesc(FPooledRenderTargetDesc::Create2DDesc({sizeX, sizeY}, colorTexture->GetFormat(), FClearValueBinding::None, TexCreate_None, TexCreate_ShaderResource | TexCreate_UAV, false));
 		ComputeShaderOutputDesc.DebugName = TEXT("CustomCS_Output_RenderTarget");
 		GRenderTargetPool.FindFreeElement(RHICmdList, ComputeShaderOutputDesc, m_pComputeShaderOutput, TEXT("CustomCS_Output_RenderTarget"));
+		m_pOutputSizeX = sizeX;
+		m_pOutputSizeY = sizeY;
 	}
 	
 	//Unbind the previously bound render targets
@@ -148,15 +151,16 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 
 	//Fill the shader parameters structure with tha cached data supplied by the client
 	CustomComputeShader::FParameters PassParameters;
-	PassParameters.MainTexTexelSize = FVector4(sizeX, sizeY, 0, 0);
-	PassParameters.SamplesCount = m_pCachedParams.SamplesCount;
-	PassParameters.IndirectAmount = m_pCachedParams.IndirectAmount;
-	PassParameters.NoiseAmount = m_pCachedParams.NoiseAmount;
-	PassParameters.Noise = m_pCachedParams.Noise; // No noise
 	PassParameters.InverseProjectionMatrix = m_pCachedParams.InverseProjection;
+	PassParameters.ViewportSize = FVector4(sizeX, sizeY, 0, 0);
+	
+
+	PassParameters.Data.X = m_pCachedParams.SamplesCount;
+	PassParameters.Data.Y = m_pCachedParams.IndirectAmount;
+	PassParameters.Data.Z = m_pCachedParams.NoiseAmount;
+	PassParameters.Data.W = m_pCachedParams.Noise;
 
 	PassParameters.OutputTexture = m_pComputeShaderOutput->GetRenderTargetItem().UAV;
-	PassParameters.ColorTexture = colorTextureUAV;
 	PassParameters.MainTexture = colorTexture;
 	PassParameters.DepthTexture = depthSurface->GetTexture2D();
 
@@ -179,11 +183,11 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 		m_pComputeShaderOutput->GetRenderTargetItem().ShaderResourceTexture,
 		colorTexture, FRHICopyTextureInfo()
 	);
+}
 
-	//RHICmdList.CopyTexture(
-	//	m_pComputeShaderOutput->GetRenderTargetItem().ShaderResourceTexture, 
-	//	colorSurface->GetTexture2D(), FRHICopyTextureInfo()
-	//);
+void ComputeShaderManager::Execute_RenderThread(FPostOpaqueRenderParameters& params)
+{
+	
 }
 
 
@@ -192,8 +196,43 @@ FMyViewExtension::FMyViewExtension(const FAutoRegister& AutoRegister, FLinearCol
 	FSceneViewExtensionBase(AutoRegister)
 {
 }
-
+void FMyViewExtension::PostRenderBasePass_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneView& InView)
+{
+	
+}
 void FMyViewExtension::PrePostProcessPass_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& View, const FPostProcessingInputs& Inputs)
 {
-
+	
+	if (ComputeShaderManager::Get()->m_pComputeShaderOutput.IsValid())
+	{
+		//FRDGBuilder graphBuilder(GraphBuilder.RHICmdList);
+		//CustomComputeShader::FParameters* PassParameters = graphBuilder.AllocParameters< CustomComputeShader::FParameters>();
+		//
+		//auto colorTexture = (*Inputs.SceneTextures)->SceneColorTexture;
+		//auto dstTexture = ComputeShaderManager::Get()->m_pComputeShaderOutput->GetRenderTargetItem().UAV;
+		//auto depthTexture = ComputeShaderManager::Get()->m_pComputeShaderOutput->GetRenderTargetItem().ShaderResourceTexture;
+		//
+		//PassParameters->Test = colorTexture;
+		//PassParameters->OutputTexture = dstTexture;
+		//PassParameters->DepthTexture = depthTexture;
+		//PassParameters->MainTexture = depthTexture;
+		//
+		//graphBuilder.AddPass(
+		//	RDG_EVENT_NAME("My Copy Pass"),
+		//	//PassParameters,
+		//	ERDGPassFlags::None,
+		//	[PassParameters, Inputs](FRHIComputeCommandList& RHICmdList)
+		//	{
+		//		TShaderMapRef<CustomComputeShader> ssgiCS(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		//
+		//		FIntVector workGroups(
+		//			FMath::DivideAndRoundUp(ComputeShaderManager::Get()->m_pOutputSizeX, NUM_THREADS_PER_GROUP_DIMENSION),
+		//			FMath::DivideAndRoundUp(ComputeShaderManager::Get()->m_pOutputSizeY, NUM_THREADS_PER_GROUP_DIMENSION),
+		//			1
+		//		);
+		//		FComputeShaderUtils::Dispatch(RHICmdList, ssgiCS, *PassParameters, workGroups);
+		//	}
+		//);
+		//graphBuilder.Execute();
+	}
 }
