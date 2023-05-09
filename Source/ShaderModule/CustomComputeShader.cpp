@@ -14,6 +14,7 @@
 // https://itscai.us/blog/post/ue-view-extensions/
 
 
+
 class CustomComputeShader : public FGlobalShader
 {
 public:
@@ -28,7 +29,8 @@ public:
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_UAV(RWTexture2D<float>, OutputTexture)
 		SHADER_PARAMETER_TEXTURE(Texture2D, MainTexture)
-		SHADER_PARAMETER_TEXTURE(Texture2D<float>, DepthTexture)
+		SHADER_PARAMETER_TEXTURE(Texture2D, DepthTexture)
+		SHADER_PARAMETER_SAMPLER(SamplerState, MainSampler)
 		SHADER_PARAMETER(FMatrix, InverseProjectionMatrix)
 		SHADER_PARAMETER(FVector4, ViewportSize)
 		SHADER_PARAMETER(FVector4, Data)
@@ -97,7 +99,7 @@ void ComputeShaderManager::EndRendering()
 	{
 		RendererModule->GetResolvedSceneColorCallbacks().Remove(m_pOnPostResolvedSceneColorHandle);
 	}
-
+	
 	m_pOnPostResolvedSceneColorHandle.Reset();
 }
 
@@ -124,13 +126,13 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 	
 	auto colorSurface = SceneContext.GetSceneColorSurface();
 	auto depthSurface = SceneContext.GetSceneDepthSurface();
-
+	
 	auto colorTextureUAV = SceneContext.GetSceneColorTextureUAV();
 	auto colorTexture	 = SceneContext.GetSceneColorTexture();
-
+	
 	int32_t sizeX = (int32_t)colorTexture->GetTexture2D()->GetSizeX();
 	int32_t sizeY = (int32_t)colorTexture->GetTexture2D()->GetSizeY();
-	
+
 	//If the render target is not valid, get an element from the render target pool by supplying a Descriptor
 	if (!m_pComputeShaderOutput.IsValid() || m_pOutputSizeX != sizeX || m_pOutputSizeY != sizeY)
 	{
@@ -142,6 +144,18 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 		m_pOutputSizeX = sizeX;
 		m_pOutputSizeY = sizeY;
 	}
+
+	FSamplerStateInitializerRHI initializer(
+		ESamplerFilter::SF_AnisotropicLinear,
+		AM_Wrap,
+		AM_Wrap,
+		AM_Wrap,
+		1,
+		1,
+		1.0f,
+		5.0f
+	);
+
 	
 	//Unbind the previously bound render targets
 	//UnbindRenderTargets(RHICmdList);
@@ -152,7 +166,7 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 	//Fill the shader parameters structure with tha cached data supplied by the client
 	CustomComputeShader::FParameters PassParameters;
 	PassParameters.InverseProjectionMatrix = m_pCachedParams.InverseProjection;
-	PassParameters.ViewportSize = FVector4(sizeX, sizeY, 0, 0);
+	PassParameters.ViewportSize = FVector4(sizeX, sizeY, 1.0f / (float)sizeX, 1.0f / (float)sizeY);
 	
 
 	PassParameters.Data.X = m_pCachedParams.SamplesCount;
@@ -162,9 +176,9 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 
 	PassParameters.OutputTexture = m_pComputeShaderOutput->GetRenderTargetItem().UAV;
 	PassParameters.MainTexture = colorTexture;
-	PassParameters.DepthTexture = depthSurface->GetTexture2D();
-
-
+	PassParameters.DepthTexture = SceneContext.GetSceneDepthTexture();//depthSurface->GetTexture2D();
+	PassParameters.MainSampler = RHICmdList.CreateSamplerState(initializer);
+	
 	//Get a reference to our shader type from global shader map
 	TShaderMapRef<CustomComputeShader> ssgiCS(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 	

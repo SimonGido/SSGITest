@@ -1,0 +1,8 @@
+{
+	"BuildId": "17155196",
+	"Modules": 
+	{
+		"PostProcessing": "UE4Editor-PostProcessing-Win64-DebugGame.dll",
+		"ShaderModule": "UE4Editor-ShaderModule-Win64-DebugGame.dll"
+	}
+}

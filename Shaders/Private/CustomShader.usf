@@ -1,24 +1,15 @@
 #include "/Engine/Public/Platform.ush"
 
 RWTexture2D<float4> OutputTexture;
-Texture2D MainTexture;
+Texture2D<float4> MainTexture;
 Texture2D<float> DepthTexture;
+SamplerState MainSampler;
 
 
 float4x4 InverseProjectionMatrix;
 float4 ViewportSize;
 float4 Data; // SampleCount, IndirectAmount, NoiseAmount, Noise
 
-float Pow(float x, float y)
-{
-    int sign = 1;
-    if (x < 0)
-    {
-        sign = -1;
-        x = -x;
-    }
-    return pow(x, y) * sign;
-}
 
 
 float2 mod_dither3(float2 u)
@@ -38,15 +29,23 @@ float2 dither(float2 coord, float seed, float2 size)
 
 float3 getViewPos(Texture2D<float> tex, float2 uv, float4x4 ipm)
 {
-    float2 coord = uv * ViewportSize.xy;
-    float depth = tex[coord].r;
-    
+    float depth = tex.SampleLevel(MainSampler, uv, 0);
+ 
     //Turn the current pixel from ndc to world coordinates
     float3 pixel_pos_ndc = float3(uv * 2.0 - 1.0, depth * 2.0 - 1.0);
+   
+    pixel_pos_ndc = float3(
+        uv.x * 2.0 - 1.0,
+        depth * 2.0 - 1.0,
+        uv.y // In UE4 up is Z coordinate
+    );
+    // NOTE: it should be uv.y * 2.0 - 1.0 but for whatever reason it weirdly splits image in half
     float4 pixel_pos_clip = mul(ipm, float4(pixel_pos_ndc, 1.0));
     float3 pixel_pos_cam = pixel_pos_clip.xyz / pixel_pos_clip.w;
     return pixel_pos_cam;
 }
+
+
 
 float3 getViewNormal(Texture2D<float> tex, float2 uv, float4x4 ipm)
 {
@@ -64,7 +63,8 @@ float3 getViewNormal(Texture2D<float> tex, float2 uv, float4x4 ipm)
     float3 dy = p2 - vP;
     float3 dx2 = p3 - vP;
     float3 dy2 = vP - p4;
-
+    
+   
     if (length(dx2) < length(dx) && uv.x - pW >= 0.0 || uv.x + pW > 1.0)
     {
         dx = dx2;
@@ -78,12 +78,13 @@ float3 getViewNormal(Texture2D<float> tex, float2 uv, float4x4 ipm)
     return normalize(-cross(dx, dy).xyz);
 }
 
+
 float lenSq(float3 v)
 {
     return pow(v.x, 2.0) + pow(v.y, 2.0) + pow(v.z, 2.0);
 }
 
-float3 lightSample(Texture2D color_tex, Texture2D<float> depth_tex, float2 uv, float4x4 ipm, float2 lightUV, float3 normal, float3 position, float n, float2 texsize)
+float3 lightSample(Texture2D<float4> color_tex, Texture2D<float> depth_tex, float2 uv, float4x4 ipm, float2 lightUV, float3 normal, float3 position, float n, float2 texsize)
 {
     float2 random = float2(1.0, 1.0);
     int noise = int(Data.w);
@@ -98,12 +99,10 @@ float3 lightSample(Texture2D color_tex, Texture2D<float> depth_tex, float2 uv, f
         random = dither(uv, 1.0, texsize) * 0.1 * noiseAmount;
     }
     float2 coord = uv * ViewportSize.xy;
-    
     lightUV *= float2(0.7, 0.7);
 
-    float2 lightCoord = (lightUV + random) * ViewportSize.xy;
     //light absolute data 
-    float4 lightcolor = color_tex[lightCoord];
+    float4 lightcolor = color_tex.SampleLevel(MainSampler, lightUV + random, 0);
     float3 lightnormal = getViewNormal(depth_tex, frac(lightUV) + random, ipm).rgb;
     float3 lightposition = getViewPos(depth_tex, frac(lightUV) + random, ipm).xyz;
 
@@ -129,8 +128,9 @@ void Main(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> cu
                        uint GI : SV_GroupIndex)            //atm: 0...256 in columns (X)           --> "flattened" index of a thread within a group)
 {
 
-    float4 direct = MainTexture[int2(DTid.xy)];
-    float2 uv = DTid.xy / ViewportSize.xy;
+    float2 uv = float2(DTid.xy) / ViewportSize.xy;
+    float4 direct = MainTexture.SampleLevel(MainSampler, uv, 0);
+
     float3 color = normalize(direct).rgb;
     float3 indirect = float3(0.0, 0.0, 0.0);
     float PI = 3.14159;
@@ -161,9 +161,10 @@ void Main(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> cu
         indirect += lightSample(MainTexture, DepthTexture, uv, InverseProjectionMatrix, float2(xpoint, ypoint), normal, position, float(i), texSize);
     }
     float3 indirectColor = (indirect / float(samplesCount)) * indirectAmount;
-        
     direct.rgb += indirectColor.rgb;
     
-    OutputTexture[DTid.xy] = float4(direct.rgb, 1.0);
-    
+    //float depth = DepthTexture.SampleLevel(MainSampler, uv, 0);
+    //direct.rgb = float3(depth, depth, depth);
+
+    OutputTexture[DTid.xy] = float4(direct.rgb, direct.a);
 }

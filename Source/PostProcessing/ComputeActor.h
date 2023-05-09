@@ -44,7 +44,7 @@ public:
 	int m_SamplesCount = 10;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
-	float   m_IndirectAmount = 1.0f;
+	float   m_IndirectAmount = 256.0f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
 	float   m_NoiseAmount = 2.0f;

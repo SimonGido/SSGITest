@@ -4,6 +4,7 @@
 #include "ComputeActor.h"
 #include "EngineUtils.h"
 #include "Camera/CameraActor.h"
+#include "Engine/GameViewportClient.h"
 
 #include "../ShaderModule/CustomComputeShader.h"
 
@@ -39,6 +40,7 @@ void AComputeActor::BeginPlay()
 
 	m_StaticMesh->SetMaterial(0, m_Material);
 	m_Parameters = new FComputeShaderParameters(m_RenderTarget);
+
 
 	TArray<ACameraActor*> cameraActors = FindActors<ACameraActor>(GetWorld());
 	if (cameraActors.Num() != 0)

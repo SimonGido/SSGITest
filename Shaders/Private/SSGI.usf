@@ -1,0 +1,59 @@
+#include "/Engine/Public/Platform.ush"
+#include "/Engine/Private/Common.ush"
+#include "/Engine/Private/ScreenPass.ush"
+
+SCREEN_PASS_TEXTURE_VIEWPORT(ViewParams)
+
+Texture2D ColorTexture;
+Texture2D DepthTexture;
+
+float4x4 InverseProjectionMatrix;
+float4 ViewportSize;
+float4 Data; // SampleCount, IndirectAmount, NoiseAmount, Noise
+
+float2 PosToUV(float2 Pos)
+{
+    float2 ViewportUV = ((Pos - ViewParams_ViewportMin.xy) * ViewParams_ViewportSizeInverse.xy);
+    return ViewportUV * ViewParams_UVViewportSize + ViewParams_UVViewportMin;
+}
+
+
+
+float4 Main(float4 SvPosition : SV_POSITION) : SV_Target0
+{
+    float2 uv = PosToUV(SvPosition.xy);
+    float4 direct = MainTexture[int2(DTid.xy)];
+    direct = tex2D()
+
+    float3 color = normalize(direct).rgb;
+    float3 indirect = float3(0.0, 0.0, 0.0);
+    float PI = 3.14159;
+    float2 texSize = ViewportSize.zw;
+    
+    float3 position = getViewPos(DepthTexture, uv, InverseProjectionMatrix);
+    float3 normal = getViewNormal(DepthTexture, uv, InverseProjectionMatrix);
+   
+    int samplesCount = int(Data.x);
+    float indirectAmount = int(Data.y);
+    
+    float dlong = PI * (3.0 - sqrt(5.0));
+    float dz = 1.0 / float(samplesCount);
+    float l = 0.0;
+    float z = 1.0 - dz / 2.0;
+
+    for (int i = 0; i < samplesCount; i++)
+    {
+        float r = sqrt(1.0 - z);
+    
+        float xpoint = (cos(l) * r) * 0.5 + 0.5;
+        float ypoint = (sin(l) * r) * 0.5 + 0.5;
+    
+        
+        z = z - dz;
+        l = l + dlong;
+    
+        indirect += lightSample(MainTexture, DepthTexture, uv, InverseProjectionMatrix, float2(xpoint, ypoint), normal, position, float(i), texSize);
+    }
+    float3 indirectColor = (indirect / float(samplesCount)) * indirectAmount;
+    direct.rgb += indirectColor.rgb;
+}

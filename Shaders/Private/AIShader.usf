@@ -1,0 +1,81 @@
+#include "/Engine/Public/Platform.ush"
+
+Texture2D<float4> MainTexture : register(t0); // Scene color texture
+Texture2D<float> DepthTexture : register(t1); // Scene depth texture
+
+RWTexture2D<float4> OutputTexture : register(u0); // Output texture
+
+float4x4 InverseProjectionMatrix;
+float4 ViewportSize; // Screen size
+float4 Data; // Intensity, RayStepSize, RaymarchingSteps
+
+SamplerState MainSampler
+{
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = Wrap;
+    AddressV = Wrap;
+};
+
+float3 getViewPos(Texture2D<float> tex, float2 uv, float4x4 ipm)
+{
+    float2 coord = uv * ViewportSize.xy;
+    float depth = tex[coord].r;
+    depth = tex.SampleLevel(MainSampler, uv, 0);
+    //Turn the current pixel from ndc to world coordinates
+    float3 pixel_pos_ndc = float3(uv * 2.0 - 1.0, depth * 2.0 - 1.0);
+    float4 pixel_pos_clip = mul(ipm, float4(pixel_pos_ndc, 1.0));
+    float3 pixel_pos_cam = pixel_pos_clip.xyz / pixel_pos_clip.w;
+    return pixel_pos_cam;
+}
+
+
+[numthreads(THREADGROUPSIZE_X, THREADGROUPSIZE_Y, THREADGROUPSIZE_Z)]
+void Main(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> current group index (dispatched by c++)
+                       uint3 DTid : SV_DispatchThreadID, //atm: 0...256 in rows & columns (XY)   --> "global" thread id
+                       uint3 GTid : SV_GroupThreadID, //atm: 0...256, -,- in columns (X)      --> current threadId in group / "local" threadId
+                       uint GI : SV_GroupIndex)            //atm: 0...256 in columns (X)           --> "flattened" index of a thread within a group)
+{
+    // Get the texel coordinates from the dispatch thread ID
+    float2 texCoord = float2(DTid.xy) / ViewportSize.xy;
+
+    // Calculate the view ray direction
+    float3 viewPosition = getViewPos(DepthTexture, texCoord, InverseProjectionMatrix);
+    float3 viewRay = normalize(viewPosition);
+    float depth = DepthTexture.Sample(MainSampler,texCoord);
+
+    float3 indirectLighting = float3(0.0f, 0.0f, 0.0f);
+    float attenuation = 1.0f;
+
+    for (int i = 0; i < int(Data.z); ++i)
+    {
+        // March along the view ray
+        float3 rayPosition = viewPosition;// + viewRay * (i * Data.y);
+
+        // Project the ray position back to clip space
+        float4 clipSpaceRayPos = mul(InverseProjectionMatrix, float4(rayPosition, 1.0f));
+
+        // Calculate the normalized device coordinates (NDC) position
+        float3 ndcPosition = clipSpaceRayPos.xyz / clipSpaceRayPos.w;
+
+        // Convert the NDC position to texture coordinates
+        float2 rayTexCoord = float2(ndcPosition.x * 0.5f + 0.5f, -ndcPosition.y * 0.5f + 0.5f);
+
+        // Sample the color at the current position using linear filtering
+        float4 colorSample = MainTexture.SampleLevel(MainSampler, rayTexCoord, 0);
+
+        // Calculate the direct and indirect lighting contributions
+        float3 directLighting = colorSample.rgb;
+        float3 indirectContribution = (directLighting - indirectLighting) * attenuation;
+        indirectLighting += indirectContribution * Data.x;
+
+        // Update the attenuation
+        attenuation *= colorSample.a;
+
+        // Early exit if the attenuation is below a threshold
+        if (attenuation < 0.01f)
+            break;
+    }
+
+    // Apply the indirect lighting to the output texture
+    OutputTexture[DTid.xy] = float4(indirectLighting, 1.0f);
+}
