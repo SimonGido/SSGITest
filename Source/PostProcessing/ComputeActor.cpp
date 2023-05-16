@@ -96,23 +96,25 @@ static FMatrix CreateCombinedProjectionMatrix(const FMatrix& LeftProjectionMatri
 void AComputeActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	FMatrix leftEye = GEngine->StereoRenderingDevice->GetStereoProjectionMatrix(eSSP_LEFT_EYE);
-	FMatrix rightEye = GEngine->StereoRenderingDevice->GetStereoProjectionMatrix(eSSP_RIGHT_EYE);
+	if (GEngine->StereoRenderingDevice)
+	{
+		FMatrix leftEye = GEngine->StereoRenderingDevice->GetStereoProjectionMatrix(eSSP_LEFT_EYE);
+		FMatrix rightEye = GEngine->StereoRenderingDevice->GetStereoProjectionMatrix(eSSP_RIGHT_EYE);
+		m_Parameters->LeftEyeInvProjection = leftEye;
+		m_Parameters->RightEyeInvProjection = rightEye;
+	}
 	m_Parameters->SamplesCount = m_SamplesCount;
 	m_Parameters->IndirectAmount = m_IndirectAmount;
 	m_Parameters->NoiseAmount = m_NoiseAmount;
 	m_Parameters->Noise = m_Noise;
 	m_Parameters->Enabled = m_Enabled;
 
-
 	FMinimalViewInfo viewInfo;
 	m_CameraComponent->GetCameraView(DeltaTime, viewInfo);
 	
 
-	//m_Parameters->InverseProjection = m_CameraManager->GetCameraCachePOV().CalculateProjectionMatrix().Inverse();
-	m_Parameters->InverseProjection = CreateCombinedProjectionMatrix(leftEye, rightEye).Inverse();
-	m_Parameters->LeftEyeInvProjection = leftEye;
-	m_Parameters->RightEyeInvProjection = rightEye;
+	m_Parameters->InverseProjection = m_CameraManager->GetCameraCachePOV().CalculateProjectionMatrix().Inverse();
+	
 	ComputeShaderManager::Get()->UpdateParameters(*m_Parameters);
 }
 
