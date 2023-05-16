@@ -130,7 +130,10 @@ void Main(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> cu
     if (DTid.x >= int(ViewportSize.x) || DTid.y >= int(ViewportSize.y))
         return;
     
+    float2 pixelOffset = ViewportSize.zw;
+    float uvOffset = pixelOffset / ViewportSize.xy;
     float2 uv = float2(DTid.xy) / ViewportSize.xy;
+    uv += uvOffset;
     float4 direct = MainTexture.SampleLevel(MainSampler, uv, 0);
 
     float3 color = normalize(direct).rgb;
@@ -168,5 +171,5 @@ void Main(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> cu
     //float depth = DepthTexture.SampleLevel(MainSampler, uv, 0);
     //direct.rgb = float3(depth, depth, depth);
 
-    OutputTexture[DTid.xy] = float4(direct.rgb, direct.a);
+    OutputTexture[DTid.xy + int2(ViewportSize.zw)] = float4(direct.rgb, direct.a);
 }

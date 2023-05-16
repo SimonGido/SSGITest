@@ -112,7 +112,6 @@ void ComputeShaderManager::UpdateParameters(FComputeShaderParameters& DrawParame
 
 void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneRenderTargets& SceneContext)
 {
-
 	//If there's no cached parameters to use, skip
 		//If no Render Target is supplied in the cachedParams, skip
 	if (!(bCachedParamsAreValid && m_pCachedParams.RenderTarget))
@@ -126,10 +125,10 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 	
 	auto colorSurface = SceneContext.GetSceneColorSurface();
 	auto depthSurface = SceneContext.GetSceneDepthSurface();
-	
+
 	auto colorTextureUAV = SceneContext.GetSceneColorTextureUAV();
 	auto colorTexture	 = SceneContext.GetSceneColorTexture();
-	
+
 	int32_t sizeX = (int32_t)colorTexture->GetTexture2D()->GetSizeX();
 	int32_t sizeY = (int32_t)colorTexture->GetTexture2D()->GetSizeY();
 
@@ -165,8 +164,8 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 
 	//Fill the shader parameters structure with tha cached data supplied by the client
 	CustomComputeShader::FParameters PassParameters;
-	PassParameters.InverseProjectionMatrix = m_pCachedParams.InverseProjection;
-	PassParameters.ViewportSize = FVector4(sizeX, sizeY, 1.0f / (float)sizeX, 1.0f / (float)sizeY);
+	PassParameters.InverseProjectionMatrix = m_pCachedParams.LeftEyeInvProjection;
+	PassParameters.ViewportSize = FVector4(sizeX / 2.0, sizeY, 0.0f, 0.0f);
 	
 
 	PassParameters.Data.X = m_pCachedParams.SamplesCount;
@@ -183,15 +182,22 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 	TShaderMapRef<CustomComputeShader> ssgiCS(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 	
 	FIntVector workGroups(
-		FMath::DivideAndRoundUp(sizeX, NUM_THREADS_PER_GROUP_DIMENSION),
+		FMath::DivideAndRoundUp(sizeX / 2, NUM_THREADS_PER_GROUP_DIMENSION),
 		FMath::DivideAndRoundUp(sizeY, NUM_THREADS_PER_GROUP_DIMENSION),
 		1
 	);
 
-	//Dispatch the compute shader
+	//Dispatch the compute shader for left eye
 	FComputeShaderUtils::Dispatch(RHICmdList, ssgiCS, PassParameters, workGroups);
 		
+
+	PassParameters.InverseProjectionMatrix = m_pCachedParams.RightEyeInvProjection;
+	PassParameters.ViewportSize = FVector4(sizeX / 2.0, sizeY, sizeX / 2.0, 0.0);
 	
+	//Dispatch the compute shader for right eye
+	FComputeShaderUtils::Dispatch(RHICmdList, ssgiCS, PassParameters, workGroups);
+
+
 	//Copy shader's output to the colorTexture provided by the client
 	RHICmdList.CopyTexture(
 		m_pComputeShaderOutput->GetRenderTargetItem().ShaderResourceTexture,

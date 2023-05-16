@@ -41,6 +41,8 @@ struct FComputeShaderParameters
 	float	Strength = 1.0f;
 
 	FMatrix InverseProjection;
+	FMatrix LeftEyeInvProjection;
+	FMatrix RightEyeInvProjection;
 
 	bool Enabled = true;
 
