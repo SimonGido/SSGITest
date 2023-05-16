@@ -32,16 +32,15 @@ float3 getViewPos(Texture2D<float> tex, float2 uv, float4x4 ipm)
     float depth = tex.SampleLevel(MainSampler, uv, 0);
  
     //Turn the current pixel from ndc to world coordinates
-    float3 pixel_pos_ndc = float3(uv * 2.0 - 1.0, depth * 2.0 - 1.0);
-   
-    pixel_pos_ndc = float3(
-        uv.x * 2.0 - 1.0,
-        depth * 2.0 - 1.0,
+    float3 pixel_pos_ndc = float3(
+        uv.x,
+        depth,
         uv.y // In UE4 up is Z coordinate
     );
     // NOTE: it should be uv.y * 2.0 - 1.0 but for whatever reason it weirdly splits image in half
     float4 pixel_pos_clip = mul(ipm, float4(pixel_pos_ndc, 1.0));
     float3 pixel_pos_cam = pixel_pos_clip.xyz / pixel_pos_clip.w;
+    
     return pixel_pos_cam;
 }
 
@@ -96,13 +95,13 @@ float3 lightSample(Texture2D<float4> color_tex, Texture2D<float> depth_tex, floa
     }
     else
     {
-        random = dither(uv, 1.0, texsize) * 0.1 * noiseAmount;
+        random = dither(uv, 1.0, texsize) * 0.1;
     }
     float2 coord = uv * ViewportSize.xy;
     lightUV *= float2(0.7, 0.7);
 
     //light absolute data 
-    float4 lightcolor = color_tex.SampleLevel(MainSampler, lightUV + random, 0);
+    float4 lightcolor = color_tex.SampleLevel(MainSampler, lightUV + random, 4);
     float3 lightnormal = getViewNormal(depth_tex, frac(lightUV) + random, ipm).rgb;
     float3 lightposition = getViewPos(depth_tex, frac(lightUV) + random, ipm).xyz;
 
@@ -128,6 +127,9 @@ void Main(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> cu
                        uint GI : SV_GroupIndex)            //atm: 0...256 in columns (X)           --> "flattened" index of a thread within a group)
 {
 
+    if (DTid.x >= int(ViewportSize.x) || DTid.y >= int(ViewportSize.y))
+        return;
+    
     float2 uv = float2(DTid.xy) / ViewportSize.xy;
     float4 direct = MainTexture.SampleLevel(MainSampler, uv, 0);
 

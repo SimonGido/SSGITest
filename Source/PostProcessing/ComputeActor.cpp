@@ -4,7 +4,6 @@
 #include "ComputeActor.h"
 #include "EngineUtils.h"
 #include "Camera/CameraActor.h"
-#include "Engine/GameViewportClient.h"
 
 #include "../ShaderModule/CustomComputeShader.h"
 
@@ -12,7 +11,7 @@ template <typename T>
 TArray<T*> FindActors(UWorld* world)
 {
 	TArray<T*> result;
-	TActorIterator<ACameraActor> It(world);
+	TActorIterator<T> It(world);
 	for (It; It; ++It)
 	{
 		result.Add(*It);
@@ -41,6 +40,12 @@ void AComputeActor::BeginPlay()
 	m_StaticMesh->SetMaterial(0, m_Material);
 	m_Parameters = new FComputeShaderParameters(m_RenderTarget);
 
+	TArray<APlayerCameraManager*> managers = FindActors<APlayerCameraManager>(GetWorld());
+	if (managers.Num() != 0)
+	{
+		m_CameraManager = managers[0];
+		
+	}
 
 	TArray<ACameraActor*> cameraActors = FindActors<ACameraActor>(GetWorld());
 	if (cameraActors.Num() != 0)
@@ -66,10 +71,12 @@ void AComputeActor::Tick(float DeltaTime)
 	m_Parameters->Noise = m_Noise;
 	m_Parameters->Enabled = m_Enabled;
 
+
 	FMinimalViewInfo viewInfo;
 	m_CameraComponent->GetCameraView(DeltaTime, viewInfo);
 	
-	m_Parameters->InverseProjection = viewInfo.CalculateProjectionMatrix().Inverse();
+
+	m_Parameters->InverseProjection = m_CameraManager->GetCameraCachePOV().CalculateProjectionMatrix().Inverse();
 	ComputeShaderManager::Get()->UpdateParameters(*m_Parameters);
 }
 

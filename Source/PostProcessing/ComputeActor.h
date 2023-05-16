@@ -58,5 +58,7 @@ public:
 
 	UCameraComponent* m_CameraComponent;
 
+	APlayerCameraManager* m_CameraManager;
+
 	struct FComputeShaderParameters* m_Parameters;
 };
