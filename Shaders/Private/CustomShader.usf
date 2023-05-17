@@ -34,7 +34,7 @@ float3 getViewPos(Texture2D<float> tex, float2 uv, float4x4 ipm)
     //Turn the current pixel from ndc to world coordinates
     float3 pixel_pos_ndc = float3(
         uv.x * 2.0 - 1.0,
-        uv.y * 2.0 - 1.0,// In UE4 up is Z coordinate
+        uv.y * 2.0 - 1.0,
         depth * 2.0 - 1.0
 );
     // NOTE: it should be uv.y * 2.0 - 1.0 but for whatever reason it weirdly splits image in half
