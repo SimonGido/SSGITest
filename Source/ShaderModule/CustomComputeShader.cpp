@@ -164,8 +164,8 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 
 	//Fill the shader parameters structure with tha cached data supplied by the client
 	CustomComputeShader::FParameters PassParameters;
-	PassParameters.InverseProjectionMatrix = m_pCachedParams.LeftEyeInvProjection;
-	PassParameters.ViewportSize = FVector4(sizeX / 2.0, sizeY, 0.0f, 0.0f);
+	PassParameters.InverseProjectionMatrix = m_pCachedParams.InverseProjection;
+	PassParameters.ViewportSize = FVector4(sizeX, sizeY, 0.0f, 0.0f);
 	
 
 	PassParameters.Data.X = m_pCachedParams.SamplesCount;
@@ -182,19 +182,12 @@ void ComputeShaderManager::Execute_RenderThread(FRHICommandListImmediate& RHICmd
 	TShaderMapRef<CustomComputeShader> ssgiCS(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 	
 	FIntVector workGroups(
-		FMath::DivideAndRoundUp(sizeX / 2, NUM_THREADS_PER_GROUP_DIMENSION),
+		FMath::DivideAndRoundUp(sizeX, NUM_THREADS_PER_GROUP_DIMENSION),
 		FMath::DivideAndRoundUp(sizeY, NUM_THREADS_PER_GROUP_DIMENSION),
 		1
 	);
 
 	//Dispatch the compute shader for left eye
-	FComputeShaderUtils::Dispatch(RHICmdList, ssgiCS, PassParameters, workGroups);
-		
-
-	PassParameters.InverseProjectionMatrix = m_pCachedParams.RightEyeInvProjection;
-	PassParameters.ViewportSize = FVector4(sizeX / 2.0, sizeY, sizeX / 2.0, 0.0);
-	
-	//Dispatch the compute shader for right eye
 	FComputeShaderUtils::Dispatch(RHICmdList, ssgiCS, PassParameters, workGroups);
 
 
