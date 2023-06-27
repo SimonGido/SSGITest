@@ -1,2 +1,2 @@
-C:\Users\Gido\Work\PostProcessing\Intermediate\Build\Win64\UE4Editor\Development\PostProcessing\Definitions.PostProcessing.h
-C:\Users\Gido\Work\PostProcessing\Source\PostProcessing\PostProcessing.h
+C:\Users\Gido\Work\CustomShader\Intermediate\Build\Win64\UE4Editor\Development\PostProcessing\Definitions.PostProcessing.h
+C:\Users\Gido\Work\CustomShader\Source\PostProcessing\PostProcessing.h

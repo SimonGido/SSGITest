@@ -1,5 +1,5 @@
-C:\Users\Gido\Work\PostProcessing\Intermediate\Build\Win64\UE4Editor\Development\ShaderModule\Definitions.ShaderModule.h
-C:\Users\Gido\Work\PostProcessing\Source\ShaderModule\CustomComputeShader.h
+C:\Users\Gido\Work\CustomShader\Intermediate\Build\Win64\UE4Editor\Development\ShaderModule\Definitions.ShaderModule.h
+C:\Users\Gido\Work\CustomShader\Source\ShaderModule\CustomComputeShader.h
 C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Engine\Public\SceneViewExtension.h
 C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Engine\Public\SceneViewExtensionContext.h
 C:\Program Files\Epic Games\UE_4.27\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\SceneViewExtensionContext.generated.h

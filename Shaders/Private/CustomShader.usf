@@ -1,122 +1,104 @@
 #include "/Engine/Public/Platform.ush"
 
 RWTexture2D<float4> OutputTexture;
-Texture2D<float4> MainTexture;
-Texture2D<float> DepthTexture;
-SamplerState MainSampler;
+Texture2D<float4>   ColorTexture;
+Texture2D<float4>   NormalTexture;
+Texture2D<float>    DepthTexture;
 
 
-float4x4 InverseProjectionMatrix;
-float4 ViewportSize;
-float4 Data; // SampleCount, IndirectAmount, NoiseAmount, Noise
+float4x4 InverseProjection;
+float4x4 InverseView;
+float4x4 Projection;
+float4x4 View;
+float2   ViewportSize;
 
 
-
-float2 mod_dither3(float2 u)
+float4 GetClipPosition(float2 coords, float depth)
 {
-    float noiseX = fmod(u.x + u.y + fmod(208. + u.x * 3.58, 13. + fmod(u.y * 22.9, 9.)), 7.) * .143;
-    float noiseY = fmod(u.y + u.x + fmod(203. + u.y * 3.18, 12. + fmod(u.x * 27.4, 8.)), 6.) * .139;
-    return float2(noiseX, noiseY) * 2.0 - 1.0;
-}
-
-float2 dither(float2 coord, float seed, float2 size)
-{
-    float noiseX = ((frac(1.0 - (coord.x + seed * 1.0) * (size.x / 2.0)) * 0.25) + (frac((coord.y + seed * 2.0) * (size.y / 2.0)) * 0.75)) * 2.0 - 1.0;
-    float noiseY = ((frac(1.0 - (coord.x + seed * 3.0) * (size.x / 2.0)) * 0.75) + (frac((coord.y + seed * 4.0) * (size.y / 2.0)) * 0.25)) * 2.0 - 1.0;
-    return float2(noiseX, noiseY);
+    coords /= ViewportSize;
+    return float4(coords.x * 2.0f - 1.0f, 1.0f - coords.y, depth, 1.0f);
 }
 
 
-float3 getViewPos(Texture2D<float> tex, float2 uv, float4x4 ipm)
+float3 GetViewPos(float2 coords, float depth)
 {
-    float depth = tex.SampleLevel(MainSampler, uv, 0);
- 
-    //Turn the current pixel from ndc to world coordinates
-    float3 pixel_pos_ndc = float3(
-        uv.x * 2.0 - 1.0,
-        uv.y * 2.0 - 1.0,
-        depth * 2.0 - 1.0
-);
-    // NOTE: it should be uv.y * 2.0 - 1.0 but for whatever reason it weirdly splits image in half
-    float4 pixel_pos_clip = mul(ipm, float4(pixel_pos_ndc, 1.0));
-    float3 pixel_pos_cam = pixel_pos_clip.xyz / pixel_pos_clip.w;
+    float4 clipPosition = GetClipPosition(coords, depth);
+    float4 target = mul(clipPosition, InverseProjection);
+    float3 viewPos = target.xyz / target.w;
     
-    return pixel_pos_cam;
+    return viewPos;
 }
 
-
-
-float3 getViewNormal(Texture2D<float> tex, float2 uv, float4x4 ipm)
+float4 GetPixelWorldPosition(float2 coords, float depth)
 {
-    float pW = 1.0 / ViewportSize.x;
-    float pH = 1.0 / ViewportSize.y;
+    float4 clipPosition = GetClipPosition(coords, depth);
 
-    float3 p1 = getViewPos(tex, uv + float2(pW, 0.0), ipm).xyz;
-    float3 p2 = getViewPos(tex, uv + float2(0.0, pH), ipm).xyz;
-    float3 p3 = getViewPos(tex, uv + float2(-pW, 0.0), ipm).xyz;
-    float3 p4 = getViewPos(tex, uv + float2(0.0, -pH), ipm).xyz;
-
-    float3 vP = getViewPos(tex, uv, ipm);
-
-    float3 dx = vP - p1;
-    float3 dy = p2 - vP;
-    float3 dx2 = p3 - vP;
-    float3 dy2 = vP - p4;
+    float3 target = GetViewPos(coords, depth);
     
-   
-    if (length(dx2) < length(dx) && uv.x - pW >= 0.0 || uv.x + pW > 1.0)
-    {
-        dx = dx2;
-    }
-
-    if (length(dy2) < length(dy) && uv.y - pH >= 0.0 || uv.y + pH > 1.0)
-    {
-        dy = dy2;
-    }
-
-    return normalize(-cross(dx, dy).xyz);
-}
-
-
-float lenSq(float3 v)
-{
-    return pow(v.x, 2.0) + pow(v.y, 2.0) + pow(v.z, 2.0);
-}
-
-float3 lightSample(Texture2D<float4> color_tex, Texture2D<float> depth_tex, float2 uv, float4x4 ipm, float2 lightUV, float3 normal, float3 position, float n, float2 texsize)
-{
-    float2 random = float2(1.0, 1.0);
-    int noise = int(Data.w);
-    float noiseAmount = Data.z;
+    // Return the world space position by transforming the view space position by the inverse view matrix
+    float4 worldPosition = mul(float4(target.xyz, 1.0f), InverseView);
     
-    if (noise > 0)
-    {
-        random = (mod_dither3((uv * texsize) + float2(n * 82.294, n * 127.721))) * 0.01 * noiseAmount;
-    }
+    return worldPosition;
+}
+
+float IGN(float2 coord, int frameId)
+{
+	// magic values are found by experimentation
+    coord += float(frameId) * (float2(47, 17) * 0.695f);
+
+    float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
+    
+    //https://juejin.cn/post/6844903687505068045
+    //vec3 magic = vec3( 12.9898, 78.233, 43758.5453123 );
+    
+    return frac(magic.z * frac(dot(coord, magic.xy)));
+}
+
+
+
+
+float3 GetPerpendicularVector(float3 vec)
+{
+    float3 absVector = abs(vec);
+    float3 perpendicularVector;
+
+    if (absVector.y >= 0.9f)
+        perpendicularVector = float3(vec.z, vec.x, -vec.y);
     else
-    {
-        random = dither(uv, 1.0, texsize) * 0.1;
-    }
-    float2 coord = uv * ViewportSize.xy;
-    lightUV *= float2(0.7, 0.7);
+        perpendicularVector = float3(-vec.y, vec.z, vec.x);
 
-    //light absolute data 
-    float4 lightcolor = color_tex.SampleLevel(MainSampler, lightUV + random, 4);
-    float3 lightnormal = getViewNormal(depth_tex, frac(lightUV) + random, ipm).rgb;
-    float3 lightposition = getViewPos(depth_tex, frac(lightUV) + random, ipm).xyz;
-
-                //light variable data
-    float3 lightpath = lightposition - position;
-    float3 lightdir = normalize(lightpath);
-
-                //falloff calculations
-    float cosemit = clamp(dot(lightdir, -lightnormal), 0.0, 1.0); //emit only in one direction
-    float coscatch = clamp(dot(lightdir, normal) * 0.5 + 0.5, 0.0, 1.0); //recieve light from one direction
-    float distfall = pow(lenSq(lightpath), 0.1) + 1.0; //fall off with distance
-
-    return (lightcolor * cosemit * coscatch / distfall) * (length(lightposition) / 20.0);
+    return normalize(perpendicularVector);
 }
 
+// Get a cosine-weighted random vector centered around a specified normal direction.
+float3 GetCosHemisphereSample(float rand1, float rand2, float3 hitNorm)
+{
+	// Get 2 random numbers to select our sample with
+    float2 randVal = float2(rand1, rand2);
+
+	// Cosine weighted hemisphere sample from RNG
+    float3 bitangent = GetPerpendicularVector(hitNorm);
+    float3 tangent = cross(bitangent, hitNorm);
+    float r = sqrt(randVal.x);
+    float phi = 2.0f * 3.14159265f * randVal.y;
+
+	// Get our cosine-weighted hemisphere lobe sample direction
+    return tangent * (r * cos(phi).x) + bitangent * (r * sin(phi)) + hitNorm.xyz * sqrt(max(0.0, 1.0f - randVal.x));
+}
+
+float4 Raymarch(float3 viewPos, float3 dir, int stepCount, float stepSize, float depth)
+{
+    float3 pos = viewPos;
+    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    for (int step = 0; step < stepCount; step++)
+    {
+        pos += dir * stepSize;
+        float sampledDepth = DepthTexture[int2(pos.xy)];
+        if (sampledDepth < depth)
+            return float4(pos, sampledDepth);
+    }
+    return result;
+}
 
 
 
@@ -130,46 +112,24 @@ void Main(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> cu
     if (DTid.x >= int(ViewportSize.x) || DTid.y >= int(ViewportSize.y))
         return;
     
-    float2 pixelOffset = ViewportSize.zw;
-    float uvOffset = pixelOffset / ViewportSize.xy;
-    float2 uv = float2(DTid.xy) / ViewportSize.xy;
-    uv += uvOffset;
-    float4 direct = MainTexture.SampleLevel(MainSampler, uv, 0);
-
-    float3 color = normalize(direct).rgb;
-    float3 indirect = float3(0.0, 0.0, 0.0);
-    float PI = 3.14159;
-    float2 texSize = ViewportSize.xy;
+    int stepCount = 100;
+    float stepSize = 1.0 / float(stepCount);
     
-    float3 position = getViewPos(DepthTexture, uv, InverseProjectionMatrix);
-    float3 normal = getViewNormal(DepthTexture, uv, InverseProjectionMatrix);
-   
-    int samplesCount = int(Data.x);
-    float indirectAmount = int(Data.y);
     
-    float dlong = PI * (3.0 - sqrt(5.0));
-    float dz = 1.0 / float(samplesCount);
-    float l = 0.0;
-    float z = 1.0 - dz / 2.0;
-
-    for (int i = 0; i < samplesCount; i++)
-    {
-        float r = sqrt(1.0 - z);
+    float noise = IGN(float2(DTid.xy), DTid.x % 8); //Animated Interleaved Gradient Noise
+    float depth = DepthTexture[DTid.xy];
+    float3 worldPos = GetPixelWorldPosition(float2(DTid.xy), depth).xyz;
+    float3 viewDir = normalize(GetCosHemisphereSample(noise, noise, NormalTexture[DTid.xy].xyz));
+    float3 viewPos = GetViewPos(float2(DTid.xy), depth);
+    float3 dir = normalize(mul(float4(viewDir, 1.0f), View)).xyz;
+    dir = normalize(mul(float4(dir, 1.0), Projection)).xyz;
     
-        float xpoint = (cos(l) * r) * 0.5 + 0.5;
-        float ypoint = (sin(l) * r) * 0.5 + 0.5;
+    float4 raymarchResult = Raymarch(viewPos, dir, stepCount, stepSize, depth);
+    float4 sampledColor = ColorTexture[int2(raymarchResult.xy)];
     
-        
-        z = z - dz;
-        l = l + dlong;
-    
-        indirect += lightSample(MainTexture, DepthTexture, uv, InverseProjectionMatrix, float2(xpoint, ypoint), normal, position, float(i), texSize);
-    }
-    float3 indirectColor = (indirect / float(samplesCount)) * indirectAmount;
-    direct.rgb += indirectColor.rgb;
-    
-    //float depth = DepthTexture.SampleLevel(MainSampler, uv, 0);
-    //direct.rgb = float3(depth, depth, depth);
-
-    OutputTexture[DTid.xy + int2(ViewportSize.zw)] = float4(direct.rgb, direct.a);
+    OutputTexture[DTid.xy] = NormalTexture[DTid.xy];
+    OutputTexture[DTid.xy] = float4(viewDir, 1.0f);
+    //OutputTexture[DTid.xy] = GetPixelWorldPosition(float2(DTid.xy), depth);
+    OutputTexture[DTid.xy] = float4(dir, 1.0f);
+    OutputTexture[DTid.xy] = ColorTexture[DTid.xy] + sampledColor;
 }

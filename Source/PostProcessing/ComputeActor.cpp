@@ -35,7 +35,6 @@ AComputeActor::AComputeActor()
 void AComputeActor::BeginPlay()
 {
 	Super::BeginPlay();
-	MyViewExtension = FSceneViewExtensions::NewExtension<FMyViewExtension>(FLinearColor::Green);
 	ComputeShaderManager::Get()->BeginRendering();
 
 	m_StaticMesh->SetMaterial(0, m_Material);
@@ -114,7 +113,7 @@ void AComputeActor::Tick(float DeltaTime)
 	
 
 	m_Parameters->InverseProjection = m_CameraManager->GetCameraCachePOV().CalculateProjectionMatrix().Inverse();
-	
+	m_Parameters->InverseView = m_CameraComponent->GetComponentToWorld().ToInverseMatrixWithScale();
 	ComputeShaderManager::Get()->UpdateParameters(*m_Parameters);
 }
 

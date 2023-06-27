@@ -25,8 +25,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	TSharedPtr<class FMyViewExtension, ESPMode::ThreadSafe> MyViewExtension;
-
 public:
 	UPROPERTY()
 		USceneComponent* m_Root;

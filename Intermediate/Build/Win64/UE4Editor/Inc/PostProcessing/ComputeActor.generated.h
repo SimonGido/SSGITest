@@ -13,10 +13,10 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 #endif
 #define POSTPROCESSING_ComputeActor_generated_h
 
-#define PostProcessing_Source_PostProcessing_ComputeActor_h_13_SPARSE_DATA
-#define PostProcessing_Source_PostProcessing_ComputeActor_h_13_RPC_WRAPPERS
-#define PostProcessing_Source_PostProcessing_ComputeActor_h_13_RPC_WRAPPERS_NO_PURE_DECLS
-#define PostProcessing_Source_PostProcessing_ComputeActor_h_13_INCLASS_NO_PURE_DECLS \
+#define CustomShader_Source_PostProcessing_ComputeActor_h_13_SPARSE_DATA
+#define CustomShader_Source_PostProcessing_ComputeActor_h_13_RPC_WRAPPERS
+#define CustomShader_Source_PostProcessing_ComputeActor_h_13_RPC_WRAPPERS_NO_PURE_DECLS
+#define CustomShader_Source_PostProcessing_ComputeActor_h_13_INCLASS_NO_PURE_DECLS \
 private: \
 	static void StaticRegisterNativesAComputeActor(); \
 	friend struct Z_Construct_UClass_AComputeActor_Statics; \
@@ -25,7 +25,7 @@ public: \
 	DECLARE_SERIALIZER(AComputeActor)
 
 
-#define PostProcessing_Source_PostProcessing_ComputeActor_h_13_INCLASS \
+#define CustomShader_Source_PostProcessing_ComputeActor_h_13_INCLASS \
 private: \
 	static void StaticRegisterNativesAComputeActor(); \
 	friend struct Z_Construct_UClass_AComputeActor_Statics; \
@@ -34,7 +34,7 @@ public: \
 	DECLARE_SERIALIZER(AComputeActor)
 
 
-#define PostProcessing_Source_PostProcessing_ComputeActor_h_13_STANDARD_CONSTRUCTORS \
+#define CustomShader_Source_PostProcessing_ComputeActor_h_13_STANDARD_CONSTRUCTORS \
 	/** Standard constructor, called after all reflected properties have been initialized */ \
 	NO_API AComputeActor(const FObjectInitializer& ObjectInitializer); \
 	DEFINE_DEFAULT_OBJECT_INITIALIZER_CONSTRUCTOR_CALL(AComputeActor) \
@@ -47,7 +47,7 @@ private: \
 public:
 
 
-#define PostProcessing_Source_PostProcessing_ComputeActor_h_13_ENHANCED_CONSTRUCTORS \
+#define CustomShader_Source_PostProcessing_ComputeActor_h_13_ENHANCED_CONSTRUCTORS \
 private: \
 	/** Private move- and copy-constructors, should never be used */ \
 	NO_API AComputeActor(AComputeActor&&); \
@@ -58,28 +58,28 @@ public: \
 	DEFINE_DEFAULT_CONSTRUCTOR_CALL(AComputeActor)
 
 
-#define PostProcessing_Source_PostProcessing_ComputeActor_h_13_PRIVATE_PROPERTY_OFFSET
-#define PostProcessing_Source_PostProcessing_ComputeActor_h_10_PROLOG
-#define PostProcessing_Source_PostProcessing_ComputeActor_h_13_GENERATED_BODY_LEGACY \
+#define CustomShader_Source_PostProcessing_ComputeActor_h_13_PRIVATE_PROPERTY_OFFSET
+#define CustomShader_Source_PostProcessing_ComputeActor_h_10_PROLOG
+#define CustomShader_Source_PostProcessing_ComputeActor_h_13_GENERATED_BODY_LEGACY \
 PRAGMA_DISABLE_DEPRECATION_WARNINGS \
 public: \
-	PostProcessing_Source_PostProcessing_ComputeActor_h_13_PRIVATE_PROPERTY_OFFSET \
-	PostProcessing_Source_PostProcessing_ComputeActor_h_13_SPARSE_DATA \
-	PostProcessing_Source_PostProcessing_ComputeActor_h_13_RPC_WRAPPERS \
-	PostProcessing_Source_PostProcessing_ComputeActor_h_13_INCLASS \
-	PostProcessing_Source_PostProcessing_ComputeActor_h_13_STANDARD_CONSTRUCTORS \
+	CustomShader_Source_PostProcessing_ComputeActor_h_13_PRIVATE_PROPERTY_OFFSET \
+	CustomShader_Source_PostProcessing_ComputeActor_h_13_SPARSE_DATA \
+	CustomShader_Source_PostProcessing_ComputeActor_h_13_RPC_WRAPPERS \
+	CustomShader_Source_PostProcessing_ComputeActor_h_13_INCLASS \
+	CustomShader_Source_PostProcessing_ComputeActor_h_13_STANDARD_CONSTRUCTORS \
 public: \
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 
-#define PostProcessing_Source_PostProcessing_ComputeActor_h_13_GENERATED_BODY \
+#define CustomShader_Source_PostProcessing_ComputeActor_h_13_GENERATED_BODY \
 PRAGMA_DISABLE_DEPRECATION_WARNINGS \
 public: \
-	PostProcessing_Source_PostProcessing_ComputeActor_h_13_PRIVATE_PROPERTY_OFFSET \
-	PostProcessing_Source_PostProcessing_ComputeActor_h_13_SPARSE_DATA \
-	PostProcessing_Source_PostProcessing_ComputeActor_h_13_RPC_WRAPPERS_NO_PURE_DECLS \
-	PostProcessing_Source_PostProcessing_ComputeActor_h_13_INCLASS_NO_PURE_DECLS \
-	PostProcessing_Source_PostProcessing_ComputeActor_h_13_ENHANCED_CONSTRUCTORS \
+	CustomShader_Source_PostProcessing_ComputeActor_h_13_PRIVATE_PROPERTY_OFFSET \
+	CustomShader_Source_PostProcessing_ComputeActor_h_13_SPARSE_DATA \
+	CustomShader_Source_PostProcessing_ComputeActor_h_13_RPC_WRAPPERS_NO_PURE_DECLS \
+	CustomShader_Source_PostProcessing_ComputeActor_h_13_INCLASS_NO_PURE_DECLS \
+	CustomShader_Source_PostProcessing_ComputeActor_h_13_ENHANCED_CONSTRUCTORS \
 private: \
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
@@ -87,7 +87,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
 template<> POSTPROCESSING_API UClass* StaticClass<class AComputeActor>();
 
 #undef CURRENT_FILE_ID
-#define CURRENT_FILE_ID PostProcessing_Source_PostProcessing_ComputeActor_h
+#define CURRENT_FILE_ID CustomShader_Source_PostProcessing_ComputeActor_h
 
 
 PRAGMA_ENABLE_DEPRECATION_WARNINGS

@@ -1,12 +1,12 @@
-C:\Users\Gido\Work\PostProcessing\Intermediate\Build\Win64\UE4Editor\Development\PostProcessing\Definitions.PostProcessing.h
-C:\Users\Gido\Work\PostProcessing\Source\PostProcessing\ComputeActor.h
+C:\Users\Gido\Work\CustomShader\Intermediate\Build\Win64\UE4Editor\Development\PostProcessing\Definitions.PostProcessing.h
+C:\Users\Gido\Work\CustomShader\Source\PostProcessing\ComputeActor.h
 C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Engine\Classes\Camera/CameraComponent.h
 C:\Program Files\Epic Games\UE_4.27\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\CameraComponent.generated.h
-C:\Users\Gido\Work\PostProcessing\Intermediate\Build\Win64\UE4Editor\Inc\PostProcessing\ComputeActor.generated.h
+C:\Users\Gido\Work\CustomShader\Intermediate\Build\Win64\UE4Editor\Inc\PostProcessing\ComputeActor.generated.h
 C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Engine\Public\EngineUtils.h
 C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Engine\Classes\Camera/CameraActor.h
 C:\Program Files\Epic Games\UE_4.27\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\CameraActor.generated.h
-C:\Users\Gido\Work\PostProcessing\Source\PostProcessing\../ShaderModule/CustomComputeShader.h
+C:\Users\Gido\Work\CustomShader\Source\PostProcessing\../ShaderModule/CustomComputeShader.h
 C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Engine\Public\SceneViewExtension.h
 C:\Program Files\Epic Games\UE_4.27\Engine\Source\Runtime\Engine\Public\SceneViewExtensionContext.h
 C:\Program Files\Epic Games\UE_4.27\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\SceneViewExtensionContext.generated.h
