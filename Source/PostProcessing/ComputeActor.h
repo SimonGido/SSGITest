@@ -38,18 +38,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
 		class UMaterial* m_Material;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
-	int m_SamplesCount = 10;
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
-	float   m_IndirectAmount = 256.0f;
+	float   m_FilterTreshold = 1.0f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
-	float   m_NoiseAmount = 2.0f;
+	float   m_FilterKnee = 0.1f;
 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
-	bool    m_Noise = true; // No noise
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
 	bool m_Enabled = true;

@@ -29,7 +29,7 @@
     <Filter Include="Shaders\Private">
       <UniqueIdentifier>{07314F48-282F-4E7B-B073-4BBF294A1FC7}</UniqueIdentifier>
     </Filter>
-    <None Include="..\..\Shaders\Private\CustomShader.usf">
+    <None Include="..\..\Shaders\Private\SSGI.usf">
       <Filter>Shaders\Private</Filter>
     </None>
     <Filter Include="Source\PostProcessing">
@@ -74,5 +74,8 @@
     <ClInclude Include="..\..\Source\ShaderModule\ShaderModule.h">
       <Filter>Source\ShaderModule</Filter>
     </ClInclude>
+    <None Include="..\..\Shaders\Private\Blur.usf">
+      <Filter>Shaders\Private</Filter>
+    </None>
   </ItemGroup>
 </Project>

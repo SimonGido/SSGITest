@@ -16,11 +16,10 @@
 struct FComputeShaderParameters
 {
 	UTextureRenderTarget2D* RenderTarget;
-	int32_t SamplesCount = 10;
-	float   IndirectAmount = 0;
-	float   NoiseAmount = 2.0f;
-	bool    Noise = true; // No noise
-	float	Strength = 1.0f;
+
+	float   FilterTreshold = 1.0f;
+	float   FilterKnee = 0.1f;
+
 
 	FMatrix InverseProjection;
 	FMatrix InverseView;
@@ -70,6 +69,12 @@ public:
 
 	void Execute_RenderThread(FPostOpaqueRenderParameters& params);
 
+private:
+	void CreateTextures_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext);
+	void SSGIStage_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext);
+	
+	void BlurStage_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext, FTexture2DRHIRef InputTexture, FUnorderedAccessViewRHIRef OutputView, uint32_t ResolutionDivider, int Stage);
+
 public:
 	//Private constructor to prevent client from instanciating
 	ComputeShaderManager() = default;
@@ -86,8 +91,17 @@ public:
 	//Whether we have cached parameters to pass to the shader or not
 	volatile bool bCachedParamsAreValid;
 
-	//Reference to a pooled render target where the shader will write its output
-	TRefCountPtr<IPooledRenderTarget> m_pComputeShaderOutput;
+	FTexture2DRHIRef m_pSSGIOutput;
+	FUnorderedAccessViewRHIRef m_pSSGIOutputView;
+
+
+	FTexture2DRHIRef m_pDownsampleHalfRes;
+	FUnorderedAccessViewRHIRef m_pDownsampleHalfResView;
+
+
+	FTexture2DRHIRef m_pDownsampleQuarterRes;
+	FUnorderedAccessViewRHIRef m_pDownsampleQuarterResView;
+
 
 	int32_t m_pOutputSizeX = 0;
 	int32_t m_pOutputSizeY = 0;

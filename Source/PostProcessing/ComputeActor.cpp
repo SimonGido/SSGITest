@@ -102,10 +102,8 @@ void AComputeActor::Tick(float DeltaTime)
 		m_Parameters->LeftEyeInvProjection = leftEye;
 		m_Parameters->RightEyeInvProjection = rightEye;
 	}
-	m_Parameters->SamplesCount = m_SamplesCount;
-	m_Parameters->IndirectAmount = m_IndirectAmount;
-	m_Parameters->NoiseAmount = m_NoiseAmount;
-	m_Parameters->Noise = m_Noise;
+	m_Parameters->FilterTreshold = m_FilterTreshold;
+	m_Parameters->FilterKnee = m_FilterKnee;
 	m_Parameters->Enabled = m_Enabled;
 
 	FMinimalViewInfo viewInfo;

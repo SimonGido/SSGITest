@@ -52,22 +52,13 @@ void EmptyLinkFunctionForGeneratedCodeComputeActor() {}
 #endif
 		static const UE4CodeGen_Private::FObjectPropertyParams NewProp_m_Material;
 #if WITH_METADATA
-		static const UE4CodeGen_Private::FMetaDataPairParam NewProp_m_SamplesCount_MetaData[];
+		static const UE4CodeGen_Private::FMetaDataPairParam NewProp_m_FilterTreshold_MetaData[];
 #endif
-		static const UE4CodeGen_Private::FUnsizedIntPropertyParams NewProp_m_SamplesCount;
+		static const UE4CodeGen_Private::FFloatPropertyParams NewProp_m_FilterTreshold;
 #if WITH_METADATA
-		static const UE4CodeGen_Private::FMetaDataPairParam NewProp_m_IndirectAmount_MetaData[];
+		static const UE4CodeGen_Private::FMetaDataPairParam NewProp_m_FilterKnee_MetaData[];
 #endif
-		static const UE4CodeGen_Private::FFloatPropertyParams NewProp_m_IndirectAmount;
-#if WITH_METADATA
-		static const UE4CodeGen_Private::FMetaDataPairParam NewProp_m_NoiseAmount_MetaData[];
-#endif
-		static const UE4CodeGen_Private::FFloatPropertyParams NewProp_m_NoiseAmount;
-#if WITH_METADATA
-		static const UE4CodeGen_Private::FMetaDataPairParam NewProp_m_Noise_MetaData[];
-#endif
-		static void NewProp_m_Noise_SetBit(void* Obj);
-		static const UE4CodeGen_Private::FBoolPropertyParams NewProp_m_Noise;
+		static const UE4CodeGen_Private::FFloatPropertyParams NewProp_m_FilterKnee;
 #if WITH_METADATA
 		static const UE4CodeGen_Private::FMetaDataPairParam NewProp_m_Enabled_MetaData[];
 #endif
@@ -117,43 +108,23 @@ void EmptyLinkFunctionForGeneratedCodeComputeActor() {}
 #endif
 	const UE4CodeGen_Private::FObjectPropertyParams Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Material = { "m_Material", nullptr, (EPropertyFlags)0x0010000000000005, UE4CodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, 1, STRUCT_OFFSET(AComputeActor, m_Material), Z_Construct_UClass_UMaterial_NoRegister, METADATA_PARAMS(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Material_MetaData, UE_ARRAY_COUNT(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Material_MetaData)) };
 #if WITH_METADATA
-	const UE4CodeGen_Private::FMetaDataPairParam Z_Construct_UClass_AComputeActor_Statics::NewProp_m_SamplesCount_MetaData[] = {
+	const UE4CodeGen_Private::FMetaDataPairParam Z_Construct_UClass_AComputeActor_Statics::NewProp_m_FilterTreshold_MetaData[] = {
 		{ "Category", "ShaderDemo" },
 		{ "ModuleRelativePath", "ComputeActor.h" },
 	};
 #endif
-	const UE4CodeGen_Private::FUnsizedIntPropertyParams Z_Construct_UClass_AComputeActor_Statics::NewProp_m_SamplesCount = { "m_SamplesCount", nullptr, (EPropertyFlags)0x0010000000000005, UE4CodeGen_Private::EPropertyGenFlags::Int, RF_Public|RF_Transient|RF_MarkAsNative, 1, STRUCT_OFFSET(AComputeActor, m_SamplesCount), METADATA_PARAMS(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_SamplesCount_MetaData, UE_ARRAY_COUNT(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_SamplesCount_MetaData)) };
+	const UE4CodeGen_Private::FFloatPropertyParams Z_Construct_UClass_AComputeActor_Statics::NewProp_m_FilterTreshold = { "m_FilterTreshold", nullptr, (EPropertyFlags)0x0010000000000005, UE4CodeGen_Private::EPropertyGenFlags::Float, RF_Public|RF_Transient|RF_MarkAsNative, 1, STRUCT_OFFSET(AComputeActor, m_FilterTreshold), METADATA_PARAMS(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_FilterTreshold_MetaData, UE_ARRAY_COUNT(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_FilterTreshold_MetaData)) };
 #if WITH_METADATA
-	const UE4CodeGen_Private::FMetaDataPairParam Z_Construct_UClass_AComputeActor_Statics::NewProp_m_IndirectAmount_MetaData[] = {
+	const UE4CodeGen_Private::FMetaDataPairParam Z_Construct_UClass_AComputeActor_Statics::NewProp_m_FilterKnee_MetaData[] = {
 		{ "Category", "ShaderDemo" },
 		{ "ModuleRelativePath", "ComputeActor.h" },
 	};
 #endif
-	const UE4CodeGen_Private::FFloatPropertyParams Z_Construct_UClass_AComputeActor_Statics::NewProp_m_IndirectAmount = { "m_IndirectAmount", nullptr, (EPropertyFlags)0x0010000000000005, UE4CodeGen_Private::EPropertyGenFlags::Float, RF_Public|RF_Transient|RF_MarkAsNative, 1, STRUCT_OFFSET(AComputeActor, m_IndirectAmount), METADATA_PARAMS(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_IndirectAmount_MetaData, UE_ARRAY_COUNT(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_IndirectAmount_MetaData)) };
-#if WITH_METADATA
-	const UE4CodeGen_Private::FMetaDataPairParam Z_Construct_UClass_AComputeActor_Statics::NewProp_m_NoiseAmount_MetaData[] = {
-		{ "Category", "ShaderDemo" },
-		{ "ModuleRelativePath", "ComputeActor.h" },
-	};
-#endif
-	const UE4CodeGen_Private::FFloatPropertyParams Z_Construct_UClass_AComputeActor_Statics::NewProp_m_NoiseAmount = { "m_NoiseAmount", nullptr, (EPropertyFlags)0x0010000000000005, UE4CodeGen_Private::EPropertyGenFlags::Float, RF_Public|RF_Transient|RF_MarkAsNative, 1, STRUCT_OFFSET(AComputeActor, m_NoiseAmount), METADATA_PARAMS(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_NoiseAmount_MetaData, UE_ARRAY_COUNT(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_NoiseAmount_MetaData)) };
-#if WITH_METADATA
-	const UE4CodeGen_Private::FMetaDataPairParam Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Noise_MetaData[] = {
-		{ "Category", "ShaderDemo" },
-		{ "ModuleRelativePath", "ComputeActor.h" },
-	};
-#endif
-	void Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Noise_SetBit(void* Obj)
-	{
-		((AComputeActor*)Obj)->m_Noise = 1;
-	}
-	const UE4CodeGen_Private::FBoolPropertyParams Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Noise = { "m_Noise", nullptr, (EPropertyFlags)0x0010000000000005, UE4CodeGen_Private::EPropertyGenFlags::Bool | UE4CodeGen_Private::EPropertyGenFlags::NativeBool, RF_Public|RF_Transient|RF_MarkAsNative, 1, sizeof(bool), sizeof(AComputeActor), &Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Noise_SetBit, METADATA_PARAMS(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Noise_MetaData, UE_ARRAY_COUNT(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Noise_MetaData)) };
+	const UE4CodeGen_Private::FFloatPropertyParams Z_Construct_UClass_AComputeActor_Statics::NewProp_m_FilterKnee = { "m_FilterKnee", nullptr, (EPropertyFlags)0x0010000000000005, UE4CodeGen_Private::EPropertyGenFlags::Float, RF_Public|RF_Transient|RF_MarkAsNative, 1, STRUCT_OFFSET(AComputeActor, m_FilterKnee), METADATA_PARAMS(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_FilterKnee_MetaData, UE_ARRAY_COUNT(Z_Construct_UClass_AComputeActor_Statics::NewProp_m_FilterKnee_MetaData)) };
 #if WITH_METADATA
 	const UE4CodeGen_Private::FMetaDataPairParam Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Enabled_MetaData[] = {
 		{ "Category", "ShaderDemo" },
-		{ "Comment", "// No noise\n" },
 		{ "ModuleRelativePath", "ComputeActor.h" },
-		{ "ToolTip", "No noise" },
 	};
 #endif
 	void Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Enabled_SetBit(void* Obj)
@@ -166,10 +137,8 @@ void EmptyLinkFunctionForGeneratedCodeComputeActor() {}
 		(const UE4CodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_AComputeActor_Statics::NewProp_m_StaticMesh,
 		(const UE4CodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_AComputeActor_Statics::NewProp_m_RenderTarget,
 		(const UE4CodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Material,
-		(const UE4CodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_AComputeActor_Statics::NewProp_m_SamplesCount,
-		(const UE4CodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_AComputeActor_Statics::NewProp_m_IndirectAmount,
-		(const UE4CodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_AComputeActor_Statics::NewProp_m_NoiseAmount,
-		(const UE4CodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Noise,
+		(const UE4CodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_AComputeActor_Statics::NewProp_m_FilterTreshold,
+		(const UE4CodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_AComputeActor_Statics::NewProp_m_FilterKnee,
 		(const UE4CodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_AComputeActor_Statics::NewProp_m_Enabled,
 	};
 	const FCppClassTypeInfoStatic Z_Construct_UClass_AComputeActor_Statics::StaticCppClassTypeInfo = {
@@ -199,7 +168,7 @@ void EmptyLinkFunctionForGeneratedCodeComputeActor() {}
 		}
 		return OuterClass;
 	}
-	IMPLEMENT_CLASS(AComputeActor, 1664124731);
+	IMPLEMENT_CLASS(AComputeActor, 2332129739);
 	template<> POSTPROCESSING_API UClass* StaticClass<AComputeActor>()
 	{
 		return AComputeActor::StaticClass();
