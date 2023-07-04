@@ -1,9 +1,0 @@
-{
-	"SourceFiles": [
-		"C:\\Users\\Gido\\Work\\CustomShader\\Source\\PostProcessing\\PostProcessing.Build.cs",
-		"C:\\Users\\Gido\\Work\\CustomShader\\Source\\ShaderModule\\ShaderModule.Build.cs",
-		"C:\\Users\\Gido\\Work\\CustomShader\\Source\\PostProcessing.Target.cs",
-		"C:\\Users\\Gido\\Work\\CustomShader\\Source\\PostProcessingEditor.Target.cs"
-	],
-	"EngineVersion": "4.27.2"
-}
