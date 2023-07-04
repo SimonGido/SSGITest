@@ -1,8 +1,0 @@
-{
-	"BuildId": "17155196",
-	"Modules": 
-	{
-		"PostProcessing": "UE4Editor-PostProcessing.dll",
-		"ShaderModule": "UE4Editor-ShaderModule.dll"
-	}
-}
