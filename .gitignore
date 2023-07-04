@@ -19,8 +19,11 @@ mono_crash.*
 # UE4
 Saved/
 Build/
+[Bb]inaries/
+Intermediate/
 
 # Build results
+[Bb]inaries/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
