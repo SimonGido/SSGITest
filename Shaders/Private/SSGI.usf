@@ -5,12 +5,21 @@ Texture2D<float4>   ColorTexture;
 Texture2D<float4>   NormalTexture;
 Texture2D<float>    DepthTexture;
 
+SamplerState InputSampler
+{
+    Filter = MIN_MAG_LINEAR_MIP_POINT; // Bilinear filtering
+    AddressU = Wrap; // Wrap addressing mode in U direction
+    AddressV = Wrap; // Wrap addressing mode in V direction
+};
+
 
 float4x4 InverseProjection;
 float4x4 InverseView;
 float4x4 Projection;
 float4x4 View;
 float2   ViewportSize;
+int      FrameCount;
+int      StepCount;
 
 
 float4 GetClipPosition(float2 coords, float depth)
@@ -28,6 +37,50 @@ float3 GetViewPos(float2 coords, float depth)
     
     return viewPos;
 }
+
+float3 GetViewPos(float2 coords)
+{
+    float depth = DepthTexture[int2(coords)];
+    float4 clipPosition = GetClipPosition(coords, depth);
+    float4 target = mul(clipPosition, InverseProjection);
+    float3 viewPos = target.xyz / target.w;
+    
+    return viewPos;
+}
+
+float3 GetViewNormal(float2 coords)
+{
+    float3 p1 = GetViewPos(coords + float2(1.0, 0.0)).xyz;
+    float3 p2 = GetViewPos(coords + float2(0.0, 1.0)).xyz;
+    float3 p3 = GetViewPos(coords + float2(-1.0, 0.0)).xyz;
+    float3 p4 = GetViewPos(coords + float2(0.0, -1.0)).xyz;
+
+    float3 vP = GetViewPos(coords);
+
+    float3 dx = vP - p1;
+    float3 dy = p2 - vP;
+    float3 dx2 = p3 - vP;
+    float3 dy2 = vP - p4;
+
+
+    float2 uv = coords / ViewportSize.xy;
+    float pW = 1.0 / ViewportSize.x;
+    float pH = 1.0 / ViewportSize.y;
+
+
+    if (length(dx2) < length(dx) && uv.x - pW >= 0.0 || uv.x + pW > 1.0)
+    {
+        dx = dx2;
+    }
+
+    if (length(dy2) < length(dy) && uv.y - pH >= 0.0 || uv.y + pH > 1.0)
+    {
+        dy = dy2;
+    }
+
+    return normalize(-cross(dx, dy).xyz);
+}
+
 
 float4 GetPixelWorldPosition(float2 coords, float depth)
 {
@@ -81,7 +134,7 @@ float3 GetCosHemisphereSample(float rand1, float rand2, float3 hitNorm)
     float2 randVal = float2(rand1, rand2);
 
 	// Cosine weighted hemisphere sample from RNG
-    float3 bitangent = GetPerpendicularVector(hitNorm);
+    float3 bitangent = GetPerpendicularVector(normalize(hitNorm));
     float3 tangent = cross(bitangent, hitNorm);
     float r = sqrt(randVal.x);
     float phi = 2.0f * 3.14159265f * randVal.y;
@@ -89,6 +142,7 @@ float3 GetCosHemisphereSample(float rand1, float rand2, float3 hitNorm)
 	// Get our cosine-weighted hemisphere lobe sample direction
     return tangent * (r * cos(phi).x) + bitangent * (r * sin(phi)) + hitNorm.xyz * sqrt(max(0.0, 1.0f - randVal.x));
 }
+
 
 
 struct RaymarchResult
@@ -130,13 +184,12 @@ RaymarchResult RaymarchClip(float3 origin, float3 dir, int stepCount, float step
     RaymarchResult result;
     result.Hit = false;
     
-    float clipDepth = depth * 2.0f - 1.0f;
     for (int step = 0; step < stepCount; step++)
     {
         pos += dir * stepSize;
-        float2 uv = float2(0.5, 0.5) * pos.xy + float2(0.5, 0.5);
+        float2 uv = (pos.xy + 1.0) * 0.5;
         float2 pixel = uv * ViewportSize.xy;
-        if (pixel.x > ViewportSize.x || pixel.y > ViewportSize.y)
+        if (pixel.x > ViewportSize.x || pixel.y > ViewportSize.y || pixel.x < 0.0f || pixel.y < 0.0f)
             break;
         
         float sampledDepth = DepthTexture[int2(pixel)];
@@ -148,37 +201,19 @@ RaymarchResult RaymarchClip(float3 origin, float3 dir, int stepCount, float step
             result.Depth = sampledDepth;
             break;
         }
-    }
-    
-    
-    // TODO: maybe it will look better with this => currently we raymarch untill we get pixel with bigger depth than origin of ray,
-    // this code then checks if we hit something with bigger depth and if no it raymarch again and checks if we hit something we smaller depth
-    
-    //if (!result.Hit)
-    //{
-    //    pos = origin;
-    //    for (step = 0; step < stepCount; step++)
-    //    {
-    //        pos += dir * stepSize;
-    //        float2 uv = float2(0.5, 0.5) * pos.xy + float2(0.5, 0.5);
-    //        float2 pixel = uv * ViewportSize.xy;
-    //        if (pixel.x > ViewportSize.x || pixel.y > ViewportSize.y)
-    //            break;
-    //    
-    //        float sampledDepth = DepthTexture[int2(pixel)];
-    //    
-    //        if (depth > sampledDepth)
-    //        {
-    //            result.Hit = true;
-    //            result.UV = uv;
-    //            result.Depth = sampledDepth;
-    //            break;
-    //        }
-    //    }
-    //}
-    
+    }   
     return result;
 }
+
+
+//float4 TestClipDir() // TODO: this is probably proper way to calculate clip dir
+//{
+//    float3 clipDir = mul(viewDir, (float3x3) View);
+//    float4 clipNormal = mul(float4(clipDir, 0.0), Projection);
+//    clipNormal.xyz /= clipNormal.w;
+//    clipNormal.xyz = normalize(clipNormal.xyz);
+//    clipDir = clipNormal.xyz;
+//}
 
 
 [numthreads(THREADGROUPSIZE_X, THREADGROUPSIZE_Y, THREADGROUPSIZE_Z)]
@@ -191,36 +226,41 @@ void Main(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> cu
     if (DTid.x >= int(ViewportSize.x) || DTid.y >= int(ViewportSize.y))
         return;
     
-    int stepCount = 50;
-    float noiseX = IGN(float2(DTid.xy), DTid.x); //Animated Interleaved Gradient Noise
-    float noiseY = IGN(float2(DTid.xy), DTid.y); //Animated Interleaved Gradient Noise
-    float stepSize = 2.0 / float(stepCount) + noiseX + noiseY;
-
+    int2 coords = DTid.xy;
+    float2 uv = float2(coords.xy) / ViewportSize.xy;
+    
+    
+    float noiseX = IGN(float2(coords), coords.x); //Animated Interleaved Gradient Noise
+    float noiseY = IGN(float2(coords), coords.y); //Animated Interleaved Gradient Noise
+    float stepSize = 1.0 / float(StepCount);
+    stepSize = stepSize * (noiseX + noiseY) + stepSize + 0.5f;
    
-    float depth = DepthTexture[DTid.xy];
+    float depth = DepthTexture[coords.xy];
     // Fragment world position
-    float3 worldPos = GetPixelWorldPosition(float2(DTid.xy), depth).xyz;
-    float3 clipPosition = GetClipPosition(float2(DTid.xy), depth).xyz;
-    float3 viewPos = GetViewPos(float2(DTid.xy), depth);
-    float3 screenPos = float3(DTid.x, DTid.y, depth);
-    float3 viewDir = normalize(GetCosHemisphereSample(noiseX, noiseY, NormalTexture[DTid.xy].xyz));
-   
+    float3 worldPos = GetPixelWorldPosition(float2(coords.xy), depth).xyz;
+    float3 clipPosition = GetClipPosition(float2(coords.xy), depth).xyz;
+    float3 viewPos = GetViewPos(float2(coords.xy), depth);
+    float3 screenPos = float3(coords.x, coords.y, depth);
+    float3 normal = normalize(NormalTexture.SampleLevel(InputSampler, uv, 0).rgb);
+    
+    float3 viewDir = normalize(GetCosHemisphereSample(noiseX, noiseY, normal));
+
+    
     float3 clipDir = normalize(mul(float4(viewDir, 1.0f), View)).xyz;
     clipDir = normalize(mul(float4(clipDir, 1.0), Projection)).xyz;
     
   
     // TODO: find out what is actually ray origin... and how to sample color while raymarching
     //RaymarchResult raymarchResult = Raymarch(worldPos, viewDir, stepCount, stepSize, depth);
-    RaymarchResult raymarchResult = RaymarchClip(clipPosition, clipDir, stepCount, stepSize, depth);
+    RaymarchResult raymarchResult = RaymarchClip(clipPosition, clipDir, StepCount, stepSize, depth);
     
     float4 sampledColor = ColorTexture[int2(raymarchResult.UV * ViewportSize.xy)];
-    float4 origColor = ColorTexture[DTid.xy];
+    float4 origColor = ColorTexture[coords.xy];
     
     if (!raymarchResult.Hit || depth == 0.0f)
         sampledColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    
-    //sampledColor = float4(viewDir, 1.0f);
-    
-    OutputTexture[DTid.xy] = sampledColor;
-    //OutputTexture[DTid.xy] = float4(depth, depth, depth, 1.0f);
+
+    OutputTexture[coords.xy] = sampledColor;
+    //OutputTexture[coords.xy] = float4(normal, 1.0f);
+    //OutputTexture[coords.xy] = float4(depth, depth, depth, 1.0f);
 }

@@ -102,9 +102,17 @@ void AComputeActor::Tick(float DeltaTime)
 		m_Parameters->LeftEyeInvProjection = leftEye;
 		m_Parameters->RightEyeInvProjection = rightEye;
 	}
-	m_Parameters->FilterTreshold = m_FilterTreshold;
-	m_Parameters->FilterKnee = m_FilterKnee;
+	m_Parameters->SigmaSpatial = m_SigmaSpatial;
+	m_Parameters->SigmaIntensity = m_SigmaIntensity;
+	m_Parameters->SigmaDepth = m_SigmaDepth;
+
+	m_Parameters->FilterSteps = m_FilterSteps;
+
 	m_Parameters->Enabled = m_Enabled;
+	m_Parameters->StepCount = m_StepCount;
+	m_Parameters->SSGIStrength = m_SSGIStrength;
+	m_Parameters->ShowSSGI = m_ShowSSGI;
+	m_Parameters->Blur = m_Blur;
 
 	FMinimalViewInfo viewInfo;
 	m_CameraComponent->GetCameraView(DeltaTime, viewInfo);

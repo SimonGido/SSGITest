@@ -1,0 +1,20 @@
+#include "/Engine/Public/Platform.ush"
+
+RWTexture2D<float4> OutputTexture;
+
+Texture2D<float4> SSGITexture;
+Texture2D<float4> SceneColorTexture;
+
+float SSGIStrength;
+int ShowSSGI;
+
+[numthreads(THREADGROUPSIZE_X, THREADGROUPSIZE_Y, THREADGROUPSIZE_Z)]
+void Main(uint3 DTid : SV_DispatchThreadID)
+{
+    float4 colorA = SSGITexture[DTid.xy];
+    float4 colorB = SceneColorTexture[DTid.xy];
+    if (ShowSSGI != 0)
+        OutputTexture[DTid.xy] = colorA;
+    else
+        OutputTexture[DTid.xy] = colorA * SSGIStrength + colorB;
+}

@@ -1,8 +1,9 @@
 #include "/Engine/Public/Platform.ush"
 
 
-Texture2D<float4> InputTexture; // Input texture to be downsampled
 RWTexture2D<float4> OutputTexture; // Output texture for downsampled result
+Texture2D<float4> InputTexture; // Input texture to be downsampled
+Texture2D<float> DepthTexture;
 
 SamplerState InputSampler
 {
@@ -12,8 +13,13 @@ SamplerState InputSampler
 };
 
 float2 ViewportSize;
-float FilterTreshold;
-float FilterKnee;
+
+float SigmaSpatial;
+float SigmaIntensity;
+float SigmaDepth;
+
+int FilterSteps;
+
 int Scale;
 int Mode;
 
@@ -99,38 +105,38 @@ float4 QuadraticThreshold(float4 color, float threshold, float3 curve)
 }
 
 
-
-
 float Gaussian(float x, float sigma)
 {
     return exp(-(x * x) / (2.0 * sigma * sigma));
 }
 
-float4 BilateralFilter(Texture2D<float4> tex, float2 uv, float4 centerColor, float sigmaSpatial, float sigmaIntensity)
+float4 BilateralFilter(Texture2D<float4> tex, float2 uv, float4 centerColor, float depthCenter, float sigmaSpatial, float sigmaIntensity, float sigmaDepth)
 {
     float4 filteredColor = float4(0.0, 0.0, 0.0, 0.0);
     float weightSum = 0.0;
 
     // Iterate over a square neighborhood
-    for (int i = -1; i <= 1; ++i)
+    for (int i = -FilterSteps; i <= FilterSteps; ++i)
     {
-        for (int j = -1; j <= 1; ++j)
+        for (int j = -FilterSteps; j <= FilterSteps; ++j)
         {
-            float2 offsetUV = uv + float2(i, j);
+            float2 offsetUV = uv + (float2(i + 0.5, j + 0.5) / ViewportSize);
 
             // Sample color and depth of the neighboring pixel
             float4 neighborColor = tex.SampleLevel(InputSampler, offsetUV, 0);
-            float depth = neighborColor.a;
+            float neighborDepth = DepthTexture.SampleLevel(InputSampler, offsetUV, 0);
 
             // Calculate spatial and intensity differences
             float2 spatialDiff = offsetUV - uv;
             float spatialDist = length(spatialDiff);
             float intensityDiff = length(centerColor.rgb - neighborColor.rgb);
-
+            float depthDiff = abs(depthCenter - neighborDepth);
+            
             // Calculate bilateral filter weight
             float spatialWeight = Gaussian(spatialDist, sigmaSpatial);
             float intensityWeight = Gaussian(intensityDiff, sigmaIntensity);
-            float bilateralWeight = spatialWeight * intensityWeight;
+            float depthWeight = Gaussian(depthDiff, sigmaDepth);
+            float bilateralWeight = spatialWeight * intensityWeight * depthWeight;
 
             // Accumulate filtered color and weight
             filteredColor += neighborColor * bilateralWeight;
@@ -159,7 +165,8 @@ void Main(uint3 DTid : SV_DispatchThreadID)
     else if (Mode == UPSAMPLE)
     {
         color.rgb = UpsampleTent9(InputTexture, 0, texCoords, 1.0f / ViewportSize, 1.0f);   
-        color = BilateralFilter(InputTexture, texCoords, color, FilterTreshold, FilterKnee);
+        float depth = DepthTexture.SampleLevel(InputSampler, texCoords, 0);
+        color = BilateralFilter(InputTexture, texCoords, color, depth, SigmaSpatial, SigmaIntensity, SigmaDepth);
         color.a = 1.0;
     }
     

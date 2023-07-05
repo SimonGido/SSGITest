@@ -17,9 +17,12 @@ struct FComputeShaderParameters
 {
 	UTextureRenderTarget2D* RenderTarget;
 
-	float   FilterTreshold = 1.0f;
-	float   FilterKnee = 0.1f;
-
+	float   SigmaSpatial = 1.0f;
+	float   SigmaIntensity = 0.1f;
+	float	SigmaDepth = 0.1f;
+	int		FilterSteps = 5;
+	int		StepCount = 50;
+	float   SSGIStrength = 0.1f;
 
 	FMatrix InverseProjection;
 	FMatrix InverseView;
@@ -27,6 +30,8 @@ struct FComputeShaderParameters
 	FMatrix RightEyeInvProjection;
 
 	bool Enabled = true;
+	bool ShowSSGI = false;
+	bool Blur = true;
 
 	FIntPoint GetRenderTargetSize() const
 	{
@@ -74,6 +79,7 @@ private:
 	void SSGIStage_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext);
 	
 	void BlurStage_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext, FTexture2DRHIRef InputTexture, FUnorderedAccessViewRHIRef OutputView, uint32_t ResolutionDivider, int Stage);
+	void CombineStage_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext);
 
 public:
 	//Private constructor to prevent client from instanciating
@@ -90,6 +96,10 @@ public:
 
 	//Whether we have cached parameters to pass to the shader or not
 	volatile bool bCachedParamsAreValid;
+
+
+	FTexture2DRHIRef m_pSSGICombined;
+	FUnorderedAccessViewRHIRef m_pSSGICombinedView;
 
 	FTexture2DRHIRef m_pSSGIOutput;
 	FUnorderedAccessViewRHIRef m_pSSGIOutputView;

@@ -41,14 +41,33 @@ public:
 
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
-	float   m_FilterTreshold = 1.0f;
+	float   m_SigmaSpatial = 1.0f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
-	float   m_FilterKnee = 0.1f;
+	float   m_SigmaIntensity = 0.1f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
+	float   m_SigmaDepth = 0.1f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
+	int		m_StepCount = 50;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
+	int		m_FilterSteps = 5;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
+	float   m_SSGIStrength = 0.1f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
 	bool m_Enabled = true;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
+	bool m_ShowSSGI = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
+	bool m_Blur = true;
 
 	UCameraComponent* m_CameraComponent;
 
