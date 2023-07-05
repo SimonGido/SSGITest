@@ -263,4 +263,5 @@ void Main(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> cu
     OutputTexture[coords.xy] = sampledColor;
     //OutputTexture[coords.xy] = float4(normal, 1.0f);
     //OutputTexture[coords.xy] = float4(depth, depth, depth, 1.0f);
+    
 }
