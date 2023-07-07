@@ -6,6 +6,7 @@
 #include "Camera/CameraActor.h"
 #include "Engine/Engine.h"
 
+// TODO: this is retarded IDK how to add this directory in UE build system
 #include "C:/Program Files/Epic Games/UE_4.27/Engine/Plugins/Runtime/OpenXR/Source/OpenXRHMD/Private/OpenXRHMD.h"
 
 #include "../ShaderModule/CustomComputeShader.h"
