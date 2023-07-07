@@ -29,6 +29,9 @@ struct FComputeShaderParameters
 	FMatrix LeftEyeInvProjection;
 	FMatrix RightEyeInvProjection;
 
+	FMatrix LeftEyeView;
+	FMatrix RightEyeView;
+
 	bool Enabled = true;
 	bool ShowSSGI = false;
 	bool Blur = true;
@@ -78,6 +81,10 @@ private:
 	void CreateTextures_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext);
 	void SSGIStage_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext);
 	
+	void SSGIStageVR_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext);
+
+
+
 	void BlurStage_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext, FTexture2DRHIRef InputTexture, FUnorderedAccessViewRHIRef OutputView, uint32_t ResolutionDivider, int Stage);
 	void CombineStage_RenderThread(FRHICommandListImmediate& RHICmdList, class FSceneRenderTargets& SceneContext);
 

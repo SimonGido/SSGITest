@@ -6,7 +6,10 @@
 #include "Camera/CameraActor.h"
 #include "Engine/Engine.h"
 
+#include "C:/Program Files/Epic Games/UE_4.27/Engine/Plugins/Runtime/OpenXR/Source/OpenXRHMD/Private/OpenXRHMD.h"
+
 #include "../ShaderModule/CustomComputeShader.h"
+
 
 template <typename T>
 TArray<T*> FindActors(UWorld* world)
@@ -91,6 +94,8 @@ static FMatrix CreateCombinedProjectionMatrix(const FMatrix& LeftProjectionMatri
 	return CombinedProjectionMatrix;
 }
 
+
+
 // Called every frame
 void AComputeActor::Tick(float DeltaTime)
 {
@@ -99,8 +104,21 @@ void AComputeActor::Tick(float DeltaTime)
 	{
 		FMatrix leftEye = GEngine->StereoRenderingDevice->GetStereoProjectionMatrix(eSSP_LEFT_EYE);
 		FMatrix rightEye = GEngine->StereoRenderingDevice->GetStereoProjectionMatrix(eSSP_RIGHT_EYE);
-		m_Parameters->LeftEyeInvProjection = leftEye;
-		m_Parameters->RightEyeInvProjection = rightEye;
+		
+		FOpenXRHMD* casted = (FOpenXRHMD*)(GEngine->StereoRenderingDevice.Get());
+		FQuat eyeRot;
+		FVector eyePos;
+		casted->GetRelativeEyePose(0, eSSP_LEFT_EYE, eyeRot, eyePos);
+		
+		FTransform transform(eyeRot, eyePos);
+		m_Parameters->LeftEyeView = transform.ToMatrixNoScale();
+		
+		casted->GetRelativeEyePose(0, eSSP_RIGHT_EYE, eyeRot, eyePos);
+		transform = FTransform(eyeRot, eyePos);
+		m_Parameters->RightEyeView = transform.ToMatrixNoScale();
+		
+		m_Parameters->LeftEyeInvProjection = leftEye.Inverse();
+		m_Parameters->RightEyeInvProjection = rightEye.Inverse();
 	}
 	m_Parameters->SigmaSpatial = m_SigmaSpatial;
 	m_Parameters->SigmaIntensity = m_SigmaIntensity;
@@ -120,6 +138,8 @@ void AComputeActor::Tick(float DeltaTime)
 
 	m_Parameters->InverseProjection = m_CameraManager->GetCameraCachePOV().CalculateProjectionMatrix().Inverse();
 	m_Parameters->InverseView = m_CameraComponent->GetComponentToWorld().ToInverseMatrixWithScale();
+	
+
 	ComputeShaderManager::Get()->UpdateParameters(*m_Parameters);
 }
 

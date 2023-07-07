@@ -67,7 +67,7 @@ public:
 	bool m_ShowSSGI = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShaderDemo)
-	bool m_Blur = true;
+	bool m_Blur = false;
 
 	UCameraComponent* m_CameraComponent;
 
